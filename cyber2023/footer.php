@@ -1,7 +1,6 @@
 </div>
 <div style="text-align:center;margin:20px 0;background-color:#061BB0;padding:12px 0;font-size:18px;color:white">
-研討會網址：https://cyber2023.cc-isac.org &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Copyright &copy; Cyberspace 2023. All right reserved.
+Copyright &copy; 2023. All right reserved.
 </div> 
 </div>
 </body>
