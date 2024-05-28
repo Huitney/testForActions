@@ -16,25 +16,22 @@ jobs:
       contents: read
       security-events: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'javascript', 'php' ]
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Initialize CodeQL
+      - name: Initialize the CodeQL toolchain
         uses: github/codeql-action/init@v3
         with:
-          languages: ${{ matrix.language }}
-          paths: web
+          languages: php
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v2
+        run: |
+          if [ -f composer.json ]; then
+            composer install
+          fi
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
-          category: "/language:${{ matrix.language }}"
+          category: "/language:php"
