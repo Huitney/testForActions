@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'php', 'html' ]
+        language: [ 'javascript', 'php', 'html' ]
 
     steps:
       - name: Checkout repository
@@ -31,5 +31,10 @@ jobs:
           languages: ${{ matrix.language }}
           paths: web
 
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
