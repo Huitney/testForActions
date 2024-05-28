@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Initialize the CodeQL toolchain
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v2
         with:
           config-file: .github/codeql-config.yml
 
@@ -32,6 +32,6 @@ jobs:
           fi
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v2
         with:
           category: "/language:php"
