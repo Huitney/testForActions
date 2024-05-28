@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'javascript', 'php', 'html' ]
+        language: [ 'javascript', 'php' ]
 
     steps:
       - name: Checkout repository
