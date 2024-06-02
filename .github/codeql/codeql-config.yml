@@ -1,4 +1,0 @@
-name: "JavaScript analysis"
-queries:
-  - name: "CodeQL JavaScript Analysis"
-    uses: github/codeql/javascript-queries@main
