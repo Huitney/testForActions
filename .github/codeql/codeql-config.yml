@@ -1,0 +1,3 @@
+name: "JavaScript analysis"
+queries:
+  - uses: github/codeql/javascript-queries
