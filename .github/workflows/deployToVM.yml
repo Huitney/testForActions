@@ -2,29 +2,33 @@ name: Deploy to VM
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
-    - name: Copy files via SSH
-      uses: appleboy/scp-action@v0.1.3
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
       with:
-        host: ${{ secrets.VM_HOST }}
-        username: ${{ secrets.VM_USER }}
-        key: ${{ secrets.VM_SSH_KEY }}
-        source: "."
-        target: "../js pages"
+        ssh-private-key: ${{ secrets.VM_SSH_KEY }}
 
-    - name: Execute deployment script
-      uses: appleboy/ssh-action@v0.1.5
-      with:
-        host: ${{ secrets.VM_HOST }}
-        username: ${{ secrets.VM_USER }}
-        key: ${{ secrets.VM_SSH_KEY }}
-        script: "cd /path/to/your/project && ./deploy.sh"
+    - name: Copy files to server
+      run: |
+        scp -r ./js pages ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:./js pages
+
+    - name: Run deployment script on server
+      run: |
+        ssh ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} 'bash -s' < ./deploy.sh
