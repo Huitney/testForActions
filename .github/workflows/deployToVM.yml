@@ -27,7 +27,7 @@ jobs:
 
     - name: Copy files to server
       run: |
-        scp -r ./js pages ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:./js pages
+        scp -r ./js pages ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}:./jsPages
 
     - name: Run deployment script on server
       run: |

@@ -28,4 +28,4 @@ jobs:
 
       - name: Test HTML and PHP for vulnerabilities
         run: |
-          snyk test ./js pages --all-projects || true
+          snyk test ./jsPages --all-projects || true
