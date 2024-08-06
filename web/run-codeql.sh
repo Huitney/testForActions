@@ -15,6 +15,12 @@ else
     echo "CodeQL repository already exists."
 fi
 
+# 刪除現有的 CodeQL 數據庫目錄（如果存在）
+if [ -d "codeql-db" ]; then
+    echo "Removing existing CodeQL database directory..."
+    rm -rf codeql-db
+fi
+
 echo "Running CodeQL analysis..."
 codeql database create codeql-db --language=javascript --source-root .
 codeql database analyze codeql-db $QUERY_PACK --format=sarif-latest --output=codeql-results.sarif
