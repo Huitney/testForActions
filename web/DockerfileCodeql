@@ -6,7 +6,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     unzip \
     openjdk-11-jdk \
-    git
+    git \
+    build-essential
 
 # 安裝 CodeQL CLI
 RUN curl -L -o codeql.zip https://github.com/github/codeql-cli-binaries/releases/latest/download/codeql-linux64.zip && \
