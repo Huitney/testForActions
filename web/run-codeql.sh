@@ -15,10 +15,23 @@ else
     echo "CodeQL repository already exists."
 fi
 
+# 確認查詢庫存在
+if [ ! -f "$QUERY_PACK" ]; then
+    echo "Error: Query pack $QUERY_PACK not found."
+    exit 1
+fi
+
 # 檢查是否存在現有的 CodeQL 數據庫目錄
 if [ -d "codeql-db" ]; then
     echo "CodeQL database directory already exists. Overwriting..."
     rm -rf codeql-db/*
+fi
+
+# 確認 autobuild.sh 腳本存在
+if [ ! -f "$CODEQL_REPO/javascript/tools/autobuild.sh" ]; then
+    echo "Error: autobuild.sh not found in $CODEQL_REPO/javascript/tools"
+    ls -lR "$CODEQL_REPO/javascript"
+    exit 1
 fi
 
 echo "Running CodeQL analysis..."
