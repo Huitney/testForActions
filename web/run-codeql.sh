@@ -5,7 +5,7 @@ set -e
 
 # 設定查詢庫的位置
 CODEQL_REPO="/opt/codeql"
-QUERY_PACK="$CODEQL_REPO/javascript/ql/src/codeql-suites/javascript-security-extended.qls"
+QUERY_PACK="$CODEQL_REPO/javascript/ql/src/codeql-suites/javascript-security-and-quality.qls"
 
 # 克隆 CodeQL 查詢庫（如果沒有克隆過）
 if [ ! -d "$CODEQL_REPO" ]; then
@@ -15,7 +15,7 @@ else
     echo "CodeQL repository already exists."
 fi
 
-# 確認查詢庫存在
+# 確認查詢包存在
 if [ ! -f "$QUERY_PACK" ]; then
     echo "Error: Query pack $QUERY_PACK not found."
     exit 1
