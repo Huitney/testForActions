@@ -5,7 +5,7 @@ set -e
 
 # 設定查詢庫的位置
 CODEQL_REPO="/opt/codeql"
-QUERY_PACK="$CODEQL_REPO/javascript/ql/src/codeql-suites/javascript-security-and-quality.qls"
+QUERY_PACK="$CODEQL_REPO/javascript/ql/src/codeql-suites/javascript-security-extended.qls"
 
 # 克隆 CodeQL 查詢庫（如果沒有克隆過）
 if [ ! -d "$CODEQL_REPO" ]; then
