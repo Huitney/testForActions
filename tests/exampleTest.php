@@ -10,7 +10,7 @@ class ExampleTest extends TestCase
 
         // 包含要測試的PHP文件
         ob_start();
-        include '/var/www/my-repo/index.php';
+        include '/var/www/testForActions/index.php';
         $output = ob_get_clean();
 
         // 檢查輸出是否包含預期的內容
@@ -23,7 +23,7 @@ class ExampleTest extends TestCase
         $_POST['name'] = 'Bob';
 
         ob_start();
-        include '/var/www/my-repo/index.php';
+        include '/var/www/testForActions/index.php';
         $output = ob_get_clean();
 
         $this->assertStringContainsString('你好, Bob!', $output);
