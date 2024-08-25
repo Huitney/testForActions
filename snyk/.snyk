@@ -1,0 +1,8 @@
+# Snyk排除配置文件
+version: v1.15.0
+
+exclude:
+  - node_modules
+  - tests
+  - vendor
+  - tmp
