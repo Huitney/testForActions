@@ -3,33 +3,39 @@ use PHPUnit\Framework\TestCase;
 
 class ExampleTest extends TestCase
 {
-    // 測試 HTML 輸出是否包含預期的文本
+    // 测试页面输出是否正确
     public function testHtmlOutput()
     {
-        // 模擬 POST 請求
-        $_POST['name'] = 'Alice';  // 模擬用戶輸入 "Alice"
+        // 模拟表单提交的输入
+        $_POST['name'] = 'Alice';
 
-        // 捕捉輸出
-        ob_start(); // 開始緩衝輸出
-        include '/var/www/testForActions/index.php'; // 包含 index.php 文件，這裡是渲染頁面的地方
-        $output = ob_get_clean(); // 獲取緩衝區內容
+        // 开始缓冲输出
+        ob_start();
+        include '/var/www/testForActions/index.php'; // 包含要测试的 PHP 文件
+        $output = ob_get_clean(); // 捕捉输出
 
-        // 檢查輸出是否包含期望的文本 "你好, Alice!"
+        // 调试输出，检查输出内容
+        var_dump($output);
+
+        // 检查输出是否包含预期的结果
         $this->assertStringContainsString('你好, Alice!', $output);
     }
 
-    // 測試表單提交後的輸出是否正確
+    // 测试表单提交的输出
     public function testFormSubmission()
     {
-        // 模擬 POST 請求
-        $_POST['name'] = 'Bob';  // 模擬用戶輸入 "Bob"
+        // 模拟另一表单提交
+        $_POST['name'] = 'Bob';
 
-        // 捕捉輸出
-        ob_start(); // 開始緩衝輸出
-        include '/var/www/testForActions/index.php'; // 渲染頁面
-        $output = ob_get_clean(); // 獲取緩衝區內容
+        // 开始缓冲输出
+        ob_start();
+        include '/var/www/testForActions/index.php'; // 渲染页面
+        $output = ob_get_clean(); // 捕捉输出
 
-        // 檢查輸出是否包含期望的文本 "你好, Bob!"
+        // 调试输出
+        var_dump($output);
+
+        // 检查输出是否包含预期的值
         $this->assertStringContainsString('你好, Bob!', $output);
     }
 }

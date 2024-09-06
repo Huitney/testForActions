@@ -1,6 +1,11 @@
 <?php
-// 確保內容以 UTF-8 編碼輸出
+// 确保页面以 UTF-8 输出
 header('Content-Type: text/html; charset=utf-8');
+
+// 输出 POST 数据以确认是否被传递
+echo "<pre>";
+print_r($_POST);
+echo "</pre>";
 ?>
 <!DOCTYPE html>
 <html lang="en">
