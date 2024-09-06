@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<?php
+// 設置正確的編碼
+header('Content-Type: text/html; charset=utf-8');
+?>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
