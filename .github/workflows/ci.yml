@@ -31,4 +31,3 @@ jobs:
     - name: Run Snyk Security Tests
       run: ./snykTest.sh
       working-directory: /var/www/testForActions
-
