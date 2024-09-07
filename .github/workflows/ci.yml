@@ -29,5 +29,5 @@ jobs:
       working-directory: /var/www/testForActions
 
     - name: Run Snyk Security Tests
-      run: ./snykTest.sh
+      run: ./snyk/snykTest.sh
       working-directory: /var/www/testForActions
