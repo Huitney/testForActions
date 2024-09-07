@@ -14,21 +14,21 @@ jobs:
 
     steps:
     - name: Check out code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
-        node-version: '14'
+        node-version: '16'
 
     - name: Install dependencies
       run: npm install
 
     - name: Run PHP Unit Tests
-      run: ./vendor/bin/phpunit tests/exampleTest.php
+      run: ./vendor/bin/phpunit tests/exampleTest.php | tee phpunit.log
 
     - name: Run JavaScript Tests
-      run: npx jest tests/scriptTest.js
+      run: npx jest tests/script.test.js | tee jest.log
 
     - name: Run Snyk Security Tests
-      run: snyk/snykTest.sh
+      run: ./snyk/snykTest.sh | tee snyk.log
