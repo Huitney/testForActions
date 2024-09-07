@@ -13,25 +13,21 @@ jobs:
     runs-on: self-hosted
 
     steps:
-    - name: Check out code
-      uses: actions/checkout@v4
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '16'
-    
-    - name: List files in working directory
-      run: ls -l
+    - name: Use server-side codebase
+      run: cd /var/www/testForActions
 
     - name: Install dependencies
       run: npm install
+      working-directory: /var/www/testForActions
 
     - name: Run PHP Unit Tests
-      run: ./vendor/bin/phpunit tests/exampleTest.php | tee phpunit.log
+      run: ./vendor/bin/phpunit tests/exampleTest.php
+      working-directory: /var/www/testForActions
 
     - name: Run JavaScript Tests
-      run: npx jest tests/script.test.js | tee jest.log
+      run: npx jest tests/script.test.js
+      working-directory: /var/www/testForActions
 
     - name: Run Snyk Security Tests
-      run: ./snyk/snykTest.sh | tee snyk.log
+      run: ./snykTest.sh
+      working-directory: /var/www/testForActions
