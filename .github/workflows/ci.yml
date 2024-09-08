@@ -9,28 +9,62 @@ on:
       - master
 
 jobs:
-  build:
+  php-tests:
     runs-on: self-hosted
-
+    container:
+      image: php:8.1-cli
     steps:
-    - name: Use server-side codebase
-      run: cd /var/www/testForActions
+    - name: Check out code
+      uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: sudo npm install
+    - name: Install PHP dependencies
+      run: |
+        apt-get update
+        apt-get install -y zip unzip
+        curl -sS https://getcomposer.org/installer | php
+        php composer.phar install
       working-directory: /var/www/testForActions
 
     - name: Run PHP Unit Tests
       run: ./vendor/bin/phpunit tests/exampleTest.php
       working-directory: /var/www/testForActions
 
+  js-tests:
+    runs-on: self-hosted
+    container:
+      image: node:16
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+
+    - name: Install Node.js dependencies
+      run: npm install
+      working-directory: /var/www/testForActions
+
     - name: Run JavaScript Tests
       run: npx jest tests/script.test.js
       working-directory: /var/www/testForActions
-      
+
+  snyk-security-tests:
+    runs-on: self-hosted
+    container:
+      image: snyk/snyk-cli
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+
     - name: Authenticate with Snyk
       run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
     - name: Run Snyk Security Tests
       run: ./snyk/snykTest.sh
       working-directory: /var/www/testForActions
+
+  send-email:
+    runs-on: self-hosted
+    needs: [php-tests, js-tests, snyk-security-tests]  # 等待所有測試完成
+    steps:
+    - name: Send test results via email
+      run: |
+        sudo apt-get install -y mailutils
+        echo "All tests have completed." | mail -s "CI/CD Pipeline Test Results" vieworld8289@gmail.com
