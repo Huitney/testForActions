@@ -66,6 +66,15 @@ jobs:
     needs: [php-tests, js-tests, snyk-security-tests]
     if: always()
     steps:
+    
+    - name: Configure Postfix
+      run: |
+        echo "postfix postfix/mailname string yourdomain.com" | sudo debconf-set-selections
+        echo "postfix postfix/main_mailer_type string 'Internet Site'" | sudo debconf-set-selections
+
+    - name: Install mailutils
+      run: sudo apt-get install -y mailutils
+      
     - name: Collect all logs
       run: |
         touch all_results.log
