@@ -50,4 +50,4 @@ jobs:
     - name: Send email with test results
       run: |
         sudo apt-get install -y mailutils
-        cat all_results.log | mail -s "CI/CD Pipeline Test Results" vieworld8289@gmail.com
+        cat all_results.log | mail -s "CI/CD Pipeline Test Results" vieworld8289@gmail.com 
