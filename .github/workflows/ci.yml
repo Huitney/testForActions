@@ -27,6 +27,9 @@ jobs:
     - name: Run JavaScript Tests
       run: npx jest tests/script.test.js
       working-directory: /var/www/testForActions
+      
+    - name: Authenticate with Snyk
+      run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
     - name: Run Snyk Security Tests
       run: ./snyk/snykTest.sh
