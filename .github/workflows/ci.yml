@@ -17,8 +17,8 @@ jobs:
 
     - name: Install PHP dependencies
       run: |
-        apt-get update
-        apt-get install -y zip unzip
+        sudo apt-get update
+        sudo apt-get install -y zip unzip
         curl -sS https://getcomposer.org/installer | php
         php composer.phar install
       working-directory: /var/www/testForActions
@@ -36,7 +36,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Install Node.js dependencies
-      run: npm install
+      run: sudo npm install
       working-directory: /var/www/testForActions
 
     - name: Run JavaScript Tests and collect logs
