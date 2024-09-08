@@ -1,3 +1,14 @@
+name: CI/CD Pipeline
+
+# 定義何時觸發工作流，例如當 push 或 pull request 發生在 master 分支時
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
 jobs:
   php-tests:
     runs-on: self-hosted
@@ -32,6 +43,21 @@ jobs:
     - name: Run JavaScript Tests and collect logs
       run: |
         npx jest tests/script.test.js > js_test_result.log 2>&1 || touch js_test_result.log
+      working-directory: /var/www/testForActions
+      continue-on-error: true
+
+  snyk-security-tests:
+    runs-on: self-hosted
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+
+    - name: Authenticate with Snyk
+      run: snyk auth ${{ secrets.SNYK_TOKEN }}
+
+    - name: Run Snyk Security Tests and collect logs
+      run: |
+        ./snyk/snykTest.sh > snyk_test_result.log 2>&1 || touch snyk_test_result.log
       working-directory: /var/www/testForActions
       continue-on-error: true
 
