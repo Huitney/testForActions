@@ -11,8 +11,6 @@ on:
 jobs:
   php-tests:
     runs-on: self-hosted
-    container:
-      image: php:8.1-cli
     steps:
     - name: Check out code
       uses: actions/checkout@v4
@@ -25,14 +23,14 @@ jobs:
         php composer.phar install
       working-directory: /var/www/testForActions
 
-    - name: Run PHP Unit Tests
-      run: ./vendor/bin/phpunit tests/exampleTest.php
+    - name: Run PHP Unit Tests and collect logs
+      run: |
+        ./vendor/bin/phpunit tests/exampleTest.php > php_test_result.log 2>&1
       working-directory: /var/www/testForActions
+      continue-on-error: true
 
   js-tests:
     runs-on: self-hosted
-    container:
-      image: node:16
     steps:
     - name: Check out code
       uses: actions/checkout@v4
@@ -41,14 +39,14 @@ jobs:
       run: npm install
       working-directory: /var/www/testForActions
 
-    - name: Run JavaScript Tests
-      run: npx jest tests/script.test.js
+    - name: Run JavaScript Tests and collect logs
+      run: |
+        npx jest tests/script.test.js > js_test_result.log 2>&1
       working-directory: /var/www/testForActions
+      continue-on-error: true
 
   snyk-security-tests:
     runs-on: self-hosted
-    container:
-      image: snyk/snyk-cli
     steps:
     - name: Check out code
       uses: actions/checkout@v4
@@ -56,15 +54,24 @@ jobs:
     - name: Authenticate with Snyk
       run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
-    - name: Run Snyk Security Tests
-      run: ./snyk/snykTest.sh
+    - name: Run Snyk Security Tests and collect logs
+      run: |
+        ./snyk/snykTest.sh > snyk_test_result.log 2>&1
       working-directory: /var/www/testForActions
+      continue-on-error: true
 
   send-email:
     runs-on: self-hosted
-    needs: [php-tests, js-tests, snyk-security-tests]  # 等待所有測試完成
+    needs: [php-tests, js-tests, snyk-security-tests]
     steps:
-    - name: Send test results via email
+    - name: Collect all logs
+      run: |
+        touch all_results.log
+        cat php_test_result.log >> all_results.log
+        cat js_test_result.log >> all_results.log
+        cat snyk_test_result.log >> all_results.log
+
+    - name: Send email with test results
       run: |
         sudo apt-get install -y mailutils
-        echo "All tests have completed." | mail -s "CI/CD Pipeline Test Results" vieworld8289@gmail.com
+        cat all_results.log | mail -s "CI/CD Pipeline Test Results" vieworld8289@gmail.com
