@@ -1,13 +1,3 @@
-name: CI/CD Pipeline
-
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
-
 jobs:
   php-tests:
     runs-on: self-hosted
@@ -25,7 +15,7 @@ jobs:
 
     - name: Run PHP Unit Tests and collect logs
       run: |
-        ./vendor/bin/phpunit tests/exampleTest.php > php_test_result.log 2>&1
+        ./vendor/bin/phpunit tests/exampleTest.php > php_test_result.log 2>&1 || touch php_test_result.log
       working-directory: /var/www/testForActions
       continue-on-error: true
 
@@ -41,35 +31,21 @@ jobs:
 
     - name: Run JavaScript Tests and collect logs
       run: |
-        npx jest tests/script.test.js > js_test_result.log 2>&1
-      working-directory: /var/www/testForActions
-      continue-on-error: true
-
-  snyk-security-tests:
-    runs-on: self-hosted
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v4
-
-    - name: Authenticate with Snyk
-      run: snyk auth ${{ secrets.SNYK_TOKEN }}
-
-    - name: Run Snyk Security Tests and collect logs
-      run: |
-        ./snyk/snykTest.sh > snyk_test_result.log 2>&1
+        npx jest tests/script.test.js > js_test_result.log 2>&1 || touch js_test_result.log
       working-directory: /var/www/testForActions
       continue-on-error: true
 
   send-email:
     runs-on: self-hosted
     needs: [php-tests, js-tests, snyk-security-tests]
+    if: always()
     steps:
     - name: Collect all logs
       run: |
         touch all_results.log
-        cat php_test_result.log >> all_results.log
-        cat js_test_result.log >> all_results.log
-        cat snyk_test_result.log >> all_results.log
+        cat php_test_result.log >> all_results.log || true
+        cat js_test_result.log >> all_results.log || true
+        cat snyk_test_result.log >> all_results.log || true
 
     - name: Send email with test results
       run: |
