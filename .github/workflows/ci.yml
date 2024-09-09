@@ -1,6 +1,5 @@
 name: CI/CD Pipeline
 
-# 定義何時觸發工作流，例如當 push 或 pull request 發生在 master 分支時
 on:
   push:
     branches:
@@ -63,20 +62,15 @@ jobs:
 
   send-email:
     runs-on: self-hosted
-    timeout-minutes: 10  #设置整个作业的超时时间为10分钟
+    timeout-minutes: 10
     needs: [php-tests, js-tests, snyk-security-tests]
     steps:
     
-    - name: Configure Postfix
+    - name: Install Postfix and mailutils
       run: |
-        echo "postfix postfix/mailname string yourdomain.com" | sudo debconf-set-selections
-        echo "postfix postfix/main_mailer_type string 'Internet Site'" | sudo debconf-set-selections
-
-    - name: Install mailutils with timeout
-      run: |
-        sudo timeout 300 apt-get install -y mailutils
+        sudo apt-get install -y postfix mailutils
         sudo service postfix start
-      
+
     - name: Collect all logs
       run: |
         touch all_results.log
@@ -86,5 +80,4 @@ jobs:
 
     - name: Send email with test results
       run: |
-        sudo apt-get install -y mailutils
         cat all_results.log | mail -s "CI/CD Pipeline Test Results" vieworld8289@gmail.com 
