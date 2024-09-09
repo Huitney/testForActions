@@ -63,8 +63,8 @@ jobs:
 
   send-email:
     runs-on: self-hosted
+    timeout-minutes: 10  # 设置整个作业的超时时间为10分钟
     needs: [php-tests, js-tests, snyk-security-tests]
-    if: always()
     steps:
     
     - name: Configure Postfix
@@ -72,8 +72,10 @@ jobs:
         echo "postfix postfix/mailname string yourdomain.com" | sudo debconf-set-selections
         echo "postfix postfix/main_mailer_type string 'Internet Site'" | sudo debconf-set-selections
 
-    - name: Install mailutils
-      run: sudo apt-get install -y mailutils
+    - name: Install mailutils with timeout
+      run: |
+        sudo timeout 300 apt-get install -y mailutils
+        sudo service postfix start
       
     - name: Collect all logs
       run: |
