@@ -34,9 +34,10 @@ jobs:
         result=$(<php_test_result.log)
         status="success"
         if grep -q "FAILURES" php_test_result.log; then status="failure"; fi
-        mysql -u ci_user -pci_password -D ci_test_reports -e \
+        mysql -u ci_user -pYOUR_PASSWORD -D ci_test_reports -e \
         "INSERT INTO test_results (test_name, result, status, log) VALUES ('PHP Unit Tests', '$result', '$status', LOAD_FILE('/var/www/testForActions/php_test_result.log'));"
-      continue-on-error: true
+      working-directory: /var/www/testForActions
+      shell: /usr/bin/bash -e {0}
 
   js-tests:
     runs-on: self-hosted
@@ -59,9 +60,10 @@ jobs:
         result=$(<js_test_result.log)
         status="success"
         if grep -q "FAIL" js_test_result.log; then status="failure"; fi
-        mysql -u ci_user -pci_password -D ci_test_reports -e \
+        mysql -u ci_user -pYOUR_PASSWORD -D ci_test_reports -e \
         "INSERT INTO test_results (test_name, result, status, log) VALUES ('JavaScript Tests', '$result', '$status', LOAD_FILE('/var/www/testForActions/js_test_result.log'));"
-      continue-on-error: true
+      working-directory: /var/www/testForActions
+      shell: /usr/bin/bash -e {0}
 
   snyk-security-tests:
     runs-on: self-hosted
@@ -83,6 +85,7 @@ jobs:
         result=$(<snyk_test_result.log)
         status="success"
         if grep -q "ERROR" snyk_test_result.log; then status="failure"; fi
-        mysql -u ci_user -pci_password -D ci_test_reports -e \
+        mysql -u ci_user -pYOUR_PASSWORD -D ci_test_reports -e \
         "INSERT INTO test_results (test_name, result, status, log) VALUES ('Snyk Security Tests', '$result', '$status', LOAD_FILE('/var/www/testForActions/snyk_test_result.log'));"
-      continue-on-error: true
+      working-directory: /var/www/testForActions
+      shell: /usr/bin/bash -e {0}
