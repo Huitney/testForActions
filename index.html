@@ -10,13 +10,32 @@
     <canvas id="testReportChart"></canvas>
 
     <script>
+        // 加入錯誤處理的 fetch 方法
         fetch('report.php')
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
-            const labels = [...new Set(data.map(item => item.test_name))];
-            const successData = data.filter(item => item.status === 'success').map(item => item.count);
-            const failureData = data.filter(item => item.status === 'failure').map(item => item.count);
+            // 加入數據有效性檢查
+            if (data.length === 0) {
+                throw new Error('No data found from the server.');
+            }
 
+            // 獲取測試名稱 (labels)
+            const labels = [...new Set(data.map(item => item.test_name))];
+
+            // 獲取成功與失敗的測試數據
+            const successData = data
+                .filter(item => item.status === 'success')
+                .map(item => item.count);
+            const failureData = data
+                .filter(item => item.status === 'failure')
+                .map(item => item.count);
+
+            // 繪製 Chart.js 圖表
             const ctx = document.getElementById('testReportChart').getContext('2d');
             new Chart(ctx, {
                 type: 'bar',
@@ -36,6 +55,9 @@
                     ]
                 }
             });
+        })
+        .catch(error => {
+            console.error('Error fetching or processing data:', error);
         });
     </script>
 </body>
