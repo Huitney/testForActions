@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CI Test Reports</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <canvas id="testReportChart"></canvas>
+
+    <script>
+        fetch('report.php')
+        .then(response => response.json())
+        .then(data => {
+            const labels = [...new Set(data.map(item => item.test_name))];
+            const successData = data.filter(item => item.status === 'success').map(item => item.count);
+            const failureData = data.filter(item => item.status === 'failure').map(item => item.count);
+
+            const ctx = document.getElementById('testReportChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Success',
+                            backgroundColor: 'green',
+                            data: successData
+                        },
+                        {
+                            label: 'Failure',
+                            backgroundColor: 'red',
+                            data: failureData
+                        }
+                    ]
+                }
+            });
+        });
+    </script>
+</body>
+</html>
