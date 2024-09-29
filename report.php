@@ -1,7 +1,5 @@
 <?php
-error_reporting(E_ALL); // 顯示所有 PHP 錯誤
-ini_set('display_errors', 1); // 打開顯示錯誤
-
+header('Content-Type: application/json');
 $conn = new mysqli('localhost', 'ci_user', 'ci_password', 'ci_test_reports');
 
 if ($conn->connect_error) {
