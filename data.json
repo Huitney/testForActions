@@ -1,32 +1,35 @@
 {
-    "total_success": 5,        // 總共成功的測試數量
-    "total_failure": 2,        // 總共失敗的測試數量
-    "error_count": 7,          // 總錯誤數量
-    "tests": [                 // 每個測試的詳細數據
+    "summary": {
+        "total_success": 5,
+        "total_failure": 2,
+        "total_errors": 7,
+        "last_updated": "2024-09-30 14:00:00"
+    },
+    "test_details": [
         {
-            "name": "Test A",  // 測試 A 名稱
-            "status": "success",  // 測試 A 的結果：成功 (success) 或失敗 (failure)
-            "errors": 0        // 測試 A 中的錯誤數量
-        },
-        {
-            "name": "Test B",  // 測試 B 名稱
-            "status": "failure",  // 測試 B 的結果：失敗
-            "errors": 3        // 測試 B 中的錯誤數量
-        },
-        {
-            "name": "Test C",  // 測試 C 名稱
+            "test_name": "Test A",
             "status": "success",
-            "errors": 0
+            "error_count": 0
         },
         {
-            "name": "Test D",
+            "test_name": "Test B",
             "status": "failure",
-            "errors": 2
+            "error_count": 3
         },
         {
-            "name": "Test E",
+            "test_name": "Test C",
             "status": "success",
-            "errors": 0
+            "error_count": 0
+        },
+        {
+            "test_name": "Test D",
+            "status": "failure",
+            "error_count": 2
+        },
+        {
+            "test_name": "Test E",
+            "status": "success",
+            "error_count": 0
         }
     ]
 }
