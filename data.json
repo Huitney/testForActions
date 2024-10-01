@@ -1,35 +1,25 @@
 {
     "summary": {
-        "total_success": 5,
+        "total_success": 10,
         "total_failure": 2,
-        "total_errors": 7,
-        "last_updated": "2024-09-30 14:00:00"
+        "total_errors": 1,
+        "last_updated": "2024-10-02 15:00:00"
     },
     "test_details": [
         {
-            "test_name": "Test A",
-            "status": "success",
-            "error_count": 0
+            "test_name": "PHP Unit Tests",
+            "error_count": 0,
+            "status": "success"
         },
         {
-            "test_name": "Test B",
-            "status": "failure",
-            "error_count": 3
+            "test_name": "JavaScript Tests",
+            "error_count": 1,
+            "status": "failure"
         },
-        {
-            "test_name": "Test C",
-            "status": "success",
-            "error_count": 0
-        },
-        {
-            "test_name": "Test D",
-            "status": "failure",
-            "error_count": 2
-        },
-        {
-            "test_name": "Test E",
-            "status": "success",
-            "error_count": 0
+		{
+            "test_name": "Synk Tests",
+            "error_count": 1,
+            "status": "failure"
         }
     ]
 }
