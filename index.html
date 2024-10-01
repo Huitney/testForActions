@@ -19,41 +19,40 @@
     <canvas id="testReportChart"></canvas>
 
     <script>
-        fetch('data.json')
-        .then(response => response.json())
-        .then(data => {
-            // 更新總結數據
-            document.getElementById('totalSuccess').textContent = data.summary.total_success;
-            document.getElementById('totalFailures').textContent = data.summary.total_failure;
-            document.getElementById('totalErrors').textContent = data.summary.total_errors;
-            document.getElementById('lastUpdated').textContent = data.summary.last_updated;
+		fetch('data.json')
+		  .then(response => response.json())
+		  .then(data => {
+			  console.log(data);  // 添加這行來輸出加載的 JSON 數據
+			  document.getElementById('totalSuccess').textContent = data.summary.total_success;
+			  document.getElementById('totalFailures').textContent = data.summary.total_failure;
+			  document.getElementById('totalErrors').textContent = data.summary.total_errors;
+			  document.getElementById('lastUpdated').textContent = data.summary.last_updated;
 
-            // 繪製圖表
-            const labels = data.test_details.map(item => item.test_name);
-            const errorData = data.test_details.map(item => item.error_count);
-            const statusColors = data.test_details.map(item => item.status === 'success' ? 'green' : 'red');
+			  // 繪製圖表
+			  const labels = data.test_details.map(item => item.test_name);
+			  const errorData = data.test_details.map(item => item.error_count);
+			  const statusColors = data.test_details.map(item => item.status === 'success' ? 'green' : 'red');
 
-            const ctx = document.getElementById('testReportChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Errors',
-                        backgroundColor: statusColors,
-                        data: errorData
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        })
-        .catch(error => console.error('Error fetching data:', error));
-    </script>
+			  const ctx = document.getElementById('testReportChart').getContext('2d');
+			  new Chart(ctx, {
+				  type: 'bar',
+				  data: {
+					  labels: labels,
+					  datasets: [{
+						  label: 'Errors',
+						  backgroundColor: statusColors,
+						  data: errorData
+					  }]
+				  },
+				  options: {
+					  scales: {
+						  y: {
+							  beginAtZero: true
+						  }
+					  }
+				  }
+			  });
+		  })
+		  .catch(error => console.error('Error fetching data:', error));    </script>
 </body>
 </html>
