@@ -1,0 +1,32 @@
+{
+    "total_success": 5,        // 總共成功的測試數量
+    "total_failure": 2,        // 總共失敗的測試數量
+    "error_count": 7,          // 總錯誤數量
+    "tests": [                 // 每個測試的詳細數據
+        {
+            "name": "Test A",  // 測試 A 名稱
+            "status": "success",  // 測試 A 的結果：成功 (success) 或失敗 (failure)
+            "errors": 0        // 測試 A 中的錯誤數量
+        },
+        {
+            "name": "Test B",  // 測試 B 名稱
+            "status": "failure",  // 測試 B 的結果：失敗
+            "errors": 3        // 測試 B 中的錯誤數量
+        },
+        {
+            "name": "Test C",  // 測試 C 名稱
+            "status": "success",
+            "errors": 0
+        },
+        {
+            "name": "Test D",
+            "status": "failure",
+            "errors": 2
+        },
+        {
+            "name": "Test E",
+            "status": "success",
+            "errors": 0
+        }
+    ]
+}
