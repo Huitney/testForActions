@@ -7,52 +7,58 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <h1>CI Test Reports</h1>
-
-    <div>
-        <p><strong>Total Success:</strong> <span id="totalSuccess"></span></p>
-        <p><strong>Total Failures:</strong> <span id="totalFailures"></span></p>
-        <p><strong>Total Errors:</strong> <span id="totalErrors"></span></p>
-        <p><strong>Last Updated:</strong> <span id="lastUpdated"></span></p>
-    </div>
-
     <canvas id="testReportChart"></canvas>
 
     <script>
-		fetch('data.json')
-		  .then(response => response.json())
-		  .then(data => {
-			  console.log(data);  // 添加這行來輸出加載的 JSON 數據
-			  document.getElementById('totalSuccess').textContent = data.summary.total_success;
-			  document.getElementById('totalFailures').textContent = data.summary.total_failure;
-			  document.getElementById('totalErrors').textContent = data.summary.total_errors;
-			  document.getElementById('lastUpdated').textContent = data.summary.last_updated;
+        // 加入錯誤處理的 fetch 方法
+        fetch('report.php')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            // 加入數據有效性檢查
+            if (data.length === 0) {
+                throw new Error('No data found from the server.');
+            }
 
-			  // 繪製圖表
-			  const labels = data.test_details.map(item => item.test_name);
-			  const errorData = data.test_details.map(item => item.error_count);
-			  const statusColors = data.test_details.map(item => item.status === 'success' ? 'green' : 'red');
+            // 獲取測試名稱 (labels)
+            const labels = [...new Set(data.map(item => item.test_name))];
 
-			  const ctx = document.getElementById('testReportChart').getContext('2d');
-			  new Chart(ctx, {
-				  type: 'bar',
-				  data: {
-					  labels: labels,
-					  datasets: [{
-						  label: 'Errors',
-						  backgroundColor: statusColors,
-						  data: errorData
-					  }]
-				  },
-				  options: {
-					  scales: {
-						  y: {
-							  beginAtZero: true
-						  }
-					  }
-				  }
-			  });
-		  })
-		  .catch(error => console.error('Error fetching data:', error));    </script>
+            // 獲取成功與失敗的測試數據
+            const successData = data
+                .filter(item => item.status === 'success')
+                .map(item => item.count);
+            const failureData = data
+                .filter(item => item.status === 'failure')
+                .map(item => item.count);
+
+            // 繪製 Chart.js 圖表
+            const ctx = document.getElementById('testReportChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Success',
+                            backgroundColor: 'green',
+                            data: successData
+                        },
+                        {
+                            label: 'Failure',
+                            backgroundColor: 'red',
+                            data: failureData
+                        }
+                    ]
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error fetching or processing data:', error);
+        });
+    </script>
 </body>
 </html>
