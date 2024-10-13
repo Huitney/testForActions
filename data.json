@@ -1,0 +1,25 @@
+{
+  "summary": {
+    "total_success": 10,
+    "total_failure": 2,
+    "total_errors": 1,
+    "last_updated": "2024-10-12 15:00:00"
+  },
+  "test_details": [
+    {
+      "test_name": "PHP Unit Tests",
+      "status": "success",
+      "error_count": 0
+    },
+    {
+      "test_name": "JavaScript Tests",
+      "status": "failure",
+      "error_count": 1
+    },
+    {
+      "test_name": "Snyk Security Tests",
+      "status": "success",
+      "error_count": 0
+    }
+  ]
+}
