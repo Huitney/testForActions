@@ -29,6 +29,16 @@ jobs:
       working-directory: /var/www/testForActions
       continue-on-error: true
 
+    - name: Check for php_test_result.log
+      run: |
+        ls -l php_test_result.log
+      working-directory: /var/www/testForActions
+
+    - name: Set correct permissions for php_test_result.log
+      run: |
+        chmod 644 php_test_result.log
+      working-directory: /var/www/testForActions
+
     - name: Insert PHP Test Results into MySQL
       run: |
         result=$(<php_test_result.log)
@@ -38,38 +48,42 @@ jobs:
         "INSERT INTO test_results (test_name, result, status, log) VALUES ('PHP Unit Tests', '$result', '$status', LOAD_FILE('/var/www/testForActions/php_test_result.log'));"
       working-directory: /var/www/testForActions
       shell: /usr/bin/bash -e {0}
-      
-    - name: Update data.json with Test Results
+
+    - name: Update data.json with PHP Test Results
       run: |
-        # Collect test results
-        result=$(<php_test_result.log)
-        status="success"
-        if grep -q "FAILURES" php_test_result.log; then status="failure"; fi
+        if [ -f php_test_result.log ]; then
+          result=$(<php_test_result.log)
+          status="success"
+          if grep -q "FAILURES" php_test_result.log; then status="failure"; fi
+          
+          # Collect summary counts
+          total_success=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM test_results WHERE status='success';")
+          total_failure=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM test_results WHERE status='failure';")
+          total_errors=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM test_results WHERE result LIKE '%FAILURES%' OR result LIKE '%FAIL%';")
+          last_updated=$(date +"%Y-%m-%d %H:%M:%S")
 
-        # Collect summary counts
-        total_success=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM test_results WHERE status='success';")
-        total_failure=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM test_results WHERE status='failure';")
-        total_errors=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM test_results WHERE result LIKE '%FAILURES%' OR result LIKE '%FAIL%';")
-        last_updated=$(date +"%Y-%m-%d %H:%M:%S")
-
-        # Update the data.json file with the new test results
-        cat <<EOT > /var/www/html/data.json
-        {
-          "summary": {
-            "total_success": $total_success,
-            "total_failure": $total_failure,
-            "total_errors": $total_errors,
-            "last_updated": "$last_updated"
-          },
-          "test_details": [
-            {
-              "test_name": "PHP Unit Tests",
-              "status": "$status",
-              "error_count": $(grep -o "FAILURES" php_test_result.log | wc -l)
-            }
-          ]
-        }
-        EOT
+          # Update data.json
+          cat <<EOT > /var/www/html/data.json
+          {
+            "summary": {
+              "total_success": $total_success,
+              "total_failure": $total_failure,
+              "total_errors": $total_errors,
+              "last_updated": "$last_updated"
+            },
+            "test_details": [
+              {
+                "test_name": "PHP Unit Tests",
+                "status": "$status",
+                "error_count": $(grep -o "FAILURES" php_test_result.log | wc -l)
+              }
+            ]
+          }
+          EOT
+        else
+          echo "php_test_result.log not found"
+        fi
+      working-directory: /var/www/testForActions
 
   js-tests:
     runs-on: self-hosted
