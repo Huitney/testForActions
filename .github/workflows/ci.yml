@@ -9,16 +9,16 @@ on:
       - master
 
 jobs:
-  php-tests:
+  tests:
     runs-on: self-hosted
     steps:
     - name: Check out code
       uses: actions/checkout@v4
 
-    - name: Install PHP dependencies
+    - name: Install PHP and Node.js dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y zip unzip
+        sudo apt-get install -y zip unzip nodejs npm
         curl -sS https://getcomposer.org/installer | php
         php composer.phar install
       working-directory: /var/www/testForActions
@@ -29,128 +29,11 @@ jobs:
       working-directory: /var/www/testForActions
       continue-on-error: true
 
-    - name: Check for php_test_result.log
-      run: |
-        ls -l php_test_result.log
-      working-directory: /var/www/testForActions
-
-    - name: Set correct permissions for php_test_result.log
-      run: |
-        chmod 644 php_test_result.log
-      working-directory: /var/www/testForActions
-
-    - name: Insert PHP Test Results into MySQL
-      run: |
-        result=$(<php_test_result.log)
-        status="success"
-        if grep -q "FAILURES" php_test_result.log; then status="failure"; fi
-        mysql -u ci_user -pci_password -D ci_test_reports -e \
-        "INSERT INTO test_results (test_name, result, status, log) VALUES ('PHP Unit Tests', '$result', '$status', LOAD_FILE('/var/www/testForActions/php_test_result.log'));"
-      working-directory: /var/www/testForActions
-      shell: /usr/bin/bash -e {0}
-
-    - name: Update data.json with PHP Test Results
-      run: |
-        if [ -f php_test_result.log ]; then
-          result=$(<php_test_result.log)
-          status="success"
-          if grep -q "FAILURES" php_test_result.log; then status="failure"; fi
-          
-          # Collect summary counts
-          total_success=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM test_results WHERE status='success';")
-          total_failure=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM test_results WHERE status='failure';")
-          total_errors=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM test_results WHERE result LIKE '%FAILURES%' OR result LIKE '%FAIL%';")
-          last_updated=$(date +"%Y-%m-%d %H:%M:%S")
-
-          # Update data.json
-          cat <<EOT > /var/www/html/data.json
-          {
-            "summary": {
-              "total_success": $total_success,
-              "total_failure": $total_failure,
-              "total_errors": $total_errors,
-              "last_updated": "$last_updated"
-            },
-            "test_details": [
-              {
-                "test_name": "PHP Unit Tests",
-                "status": "$status",
-                "error_count": $(grep -o "FAILURES" php_test_result.log | wc -l)
-              }
-            ]
-          }
-          EOT
-        else
-          echo "php_test_result.log not found"
-        fi
-      working-directory: /var/www/testForActions
-
-  js-tests:
-    runs-on: self-hosted
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v4
-
-    - name: Install Node.js dependencies
-      run: sudo npm install
-      working-directory: /var/www/testForActions
-
     - name: Run JavaScript Tests and collect logs
       run: |
         npx jest tests/script.test.js > js_test_result.log 2>&1 || touch js_test_result.log
       working-directory: /var/www/testForActions
       continue-on-error: true
-
-    - name: Insert JS Test Results into MySQL
-      run: |
-        result=$(<js_test_result.log)
-        status="success"
-        if grep -q "FAIL" js_test_result.log; then status="failure"; fi
-        mysql -u ci_user -pci_password -D ci_test_reports -e \
-        "INSERT INTO test_results (test_name, result, status, log) VALUES ('JavaScript Tests', '$result', '$status', LOAD_FILE('/var/www/testForActions/js_test_result.log'));"
-      working-directory: /var/www/testForActions
-      shell: /usr/bin/bash -e {0}
-      
-    - name: Update data.json with Test Results
-      run: |
-        # Collect test results
-        result=$(<js_test_result.log)
-        status="success"
-        if grep -q "FAILURES" js_test_result.log; then status="failure"; fi
-
-        # Collect summary counts
-        total_success=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM test_results WHERE status='success';")
-        total_failure=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM test_results WHERE status='failure';")
-        total_errors=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM test_results WHERE result LIKE '%FAILURES%' OR result LIKE '%FAIL%';")
-        last_updated=$(date +"%Y-%m-%d %H:%M:%S")
-
-        # Update the data.json file with the new test results
-        cat <<EOT > /var/www/html/data.json
-        {
-          "summary": {
-            "total_success": $total_success,
-            "total_failure": $total_failure,
-            "total_errors": $total_errors,
-            "last_updated": "$last_updated"
-          },
-          "test_details": [
-            {
-              "test_name": "PHP Unit Tests",
-              "status": "$status",
-              "error_count": $(grep -o "FAILURES" js_test_result.log | wc -l)
-            }
-          ]
-        }
-        EOT
-
-  snyk-security-tests:
-    runs-on: self-hosted
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v4
-
-    - name: Authenticate with Snyk
-      run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
     - name: Run Snyk Security Tests and collect logs
       run: |
@@ -158,30 +41,43 @@ jobs:
       working-directory: /var/www/testForActions
       continue-on-error: true
 
-    - name: Insert Snyk Test Results into MySQL
+    - name: Collect and insert all test results into MySQL
       run: |
-        result=$(<snyk_test_result.log)
-        status="success"
-        if grep -q "ERROR" snyk_test_result.log; then status="failure"; fi
-        mysql -u ci_user -pci_password -D ci_test_reports -e \
-        "INSERT INTO test_results (test_name, result, status, log) VALUES ('Snyk Security Tests', '$result', '$status', LOAD_FILE('/var/www/testForActions/snyk_test_result.log'));"
+        # Collect PHP results
+        php_result=$(<php_test_result.log)
+        php_status="success"
+        if grep -q "FAILURES" php_test_result.log; then php_status="failure"; fi
+
+        # Collect JS results
+        js_result=$(<js_test_result.log)
+        js_status="success"
+        if grep -q "FAIL" js_test_result.log; then js_status="failure"; fi
+
+        # Collect Snyk results
+        snyk_result=$(<snyk_test_result.log)
+        snyk_status="success"
+        if grep -q "ERROR" snyk_test_result.log; then snyk_status="failure"; fi
+
+        # Combine all results into a single entry
+        mysql -u ci_user -pci_password -D ci_test_reports -e "
+          INSERT INTO test_results (test_name, result, status, log)
+          VALUES 
+          ('PHP Unit Tests', '$php_result', '$php_status', LOAD_FILE('/var/www/testForActions/php_test_result.log')),
+          ('JavaScript Tests', '$js_result', '$js_status', LOAD_FILE('/var/www/testForActions/js_test_result.log')),
+          ('Snyk Security Tests', '$snyk_result', '$snyk_status', LOAD_FILE('/var/www/testForActions/snyk_test_result.log'))
+        ;"
       working-directory: /var/www/testForActions
       shell: /usr/bin/bash -e {0}
 
-    - name: Update data.json with Test Results
+    - name: Update data.json with combined test results
       run: |
-        # Collect test results
-        result=$(<snyk_test_result.log)
-        status="success"
-        if grep -q "FAILURES" snyk_test_result.log; then status="failure"; fi
-
         # Collect summary counts
         total_success=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM test_results WHERE status='success';")
         total_failure=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM test_results WHERE status='failure';")
         total_errors=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM test_results WHERE result LIKE '%FAILURES%' OR result LIKE '%FAIL%';")
         last_updated=$(date +"%Y-%m-%d %H:%M:%S")
 
-        # Update the data.json file with the new test results
+        # Update data.json
         cat <<EOT > /var/www/html/data.json
         {
           "summary": {
@@ -193,9 +89,20 @@ jobs:
           "test_details": [
             {
               "test_name": "PHP Unit Tests",
-              "status": "$status",
-              "error_count": $(grep -o "FAILURES" snyk_test_result.log | wc -l)
+              "status": "$php_status",
+              "error_count": $(grep -o "FAILURES" php_test_result.log | wc -l)
+            },
+            {
+              "test_name": "JavaScript Tests",
+              "status": "$js_status",
+              "error_count": $(grep -o "FAIL" js_test_result.log | wc -l)
+            },
+            {
+              "test_name": "Snyk Security Tests",
+              "status": "$snyk_status",
+              "error_count": $(grep -o "ERROR" snyk_test_result.log | wc -l)
             }
           ]
         }
         EOT
+      working-directory: /var/www/testForActions
