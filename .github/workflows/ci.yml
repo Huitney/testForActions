@@ -31,6 +31,12 @@ jobs:
         nvm install --lts
         nvm use --lts
       shell: bash
+    
+    - name: Fix permissions for test directory
+      run: |
+        sudo chown -R $USER:$USER /var/www/testForActions
+        sudo chmod -R 755 /var/www/testForActions
+
 
     - name: Install Node.js dependencies
       run: npm install
