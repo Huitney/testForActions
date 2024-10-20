@@ -2,58 +2,52 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CI Test Reports</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>CI/CD Test Results</title>
 </head>
 <body>
-    <h1>CI Test Reports</h1>
+    <h1>Continuous Integration Test Results</h1>
+    
+    <h2>Test Summary</h2>
+    <?php
+    $conn = new mysqli("localhost", "ci_user", "ci_password", "ci_test_reports");
 
-    <div>
-        <p><strong>Total Success:</strong> <span id="totalSuccess"></span></p>
-        <p><strong>Total Failures:</strong> <span id="totalFailures"></span></p>
-        <p><strong>Total Errors:</strong> <span id="totalErrors"></span></p>
-        <p><strong>Last Updated:</strong> <span id="lastUpdated"></span></p>
-    </div>
+    // 檢查連接
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
 
-    <canvas id="testReportChart"></canvas>
+    // 從資料庫中提取總成功和總失敗的數據
+    $result = $conn->query("SELECT status, COUNT(*) as count FROM test_results GROUP BY status");
 
-    <script>
-        fetch('data.json')
-        .then(response => response.json())
-        .then(data => {
-            // 更新總結數據
-            document.getElementById('totalSuccess').textContent = data.summary.total_success;
-            document.getElementById('totalFailures').textContent = data.summary.total_failure;
-            document.getElementById('totalErrors').textContent = data.summary.total_errors;
-            document.getElementById('lastUpdated').textContent = data.summary.last_updated;
+    echo "<ul>";
+    while($row = $result->fetch_assoc()) {
+        echo "<li>Status: " . $row["status"] . " - Count: " . $row["count"] . "</li>";
+    }
+    echo "</ul>";
 
-            // 繪製圖表
-            const labels = data.test_details.map(item => item.test_name);
-            const errorData = data.test_details.map(item => item.error_count);
-            const statusColors = data.test_details.map(item => item.status === 'success' ? 'green' : 'red');
+    // 顯示最近的測試結果
+    echo "<h2>Recent Test Results</h2>";
+    $recent_tests = $conn->query("SELECT test_name, status, result FROM test_results ORDER BY id DESC LIMIT 5");
 
-            const ctx = document.getElementById('testReportChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Errors',
-                        backgroundColor: statusColors,
-                        data: errorData
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        })
-        .catch(error => console.error('Error fetching data:', error));
-    </script>
+    echo "<table border='1'>
+    <tr>
+        <th>Test Name</th>
+        <th>Status</th>
+        <th>Result</th>
+    </tr>";
+
+    while($row = $recent_tests->fetch_assoc()) {
+        echo "<tr>
+            <td>" . $row["test_name"] . "</td>
+            <td>" . $row["status"] . "</td>
+            <td>" . substr($row["result"], 0, 50) . "...</td>
+        </tr>";
+    }
+    echo "</table>";
+
+    $conn->close();
+    ?>
 </body>
 </html>
