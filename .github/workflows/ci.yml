@@ -37,7 +37,6 @@ jobs:
         sudo chown -R $USER:$USER /var/www/testForActions
         sudo chmod -R 755 /var/www/testForActions
 
-
     - name: Install Node.js dependencies
       run: npm install
       working-directory: /var/www/testForActions
@@ -87,6 +86,11 @@ jobs:
         ;"
       working-directory: /var/www/testForActions
       shell: /usr/bin/bash -e {0}
+      
+    - name: Set correct permissions for data.json
+      run: |
+        sudo chown www-data:www-data /var/www/html/data.json
+        sudo chmod 664 /var/www/html/data.json
 
     - name: Update data.json with combined test results
       run: |
