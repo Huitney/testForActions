@@ -42,7 +42,7 @@
         echo "<tr>
             <td>" . $row["test_name"] . "</td>
             <td>" . $row["status"] . "</td>
-            <td>" . substr($row["result"], 0, 50) . "...</td>
+            <td>" . substr($row["result"], 0, null) . "...</td>
         </tr>";
     }
     echo "</table>";
