@@ -89,8 +89,10 @@ jobs:
       
     - name: Set correct permissions for data.json
       run: |
+        sudo chown -R www-data:www-data /var/www/html
+        sudo chmod -R 755 /var/www/html
         sudo chown www-data:www-data /var/www/html/data.json
-        sudo chmod 664 /var/www/html/data.json
+        sudo chmod 777 /var/www/html/data.json
 
     - name: Update data.json with combined test results
       run: |
@@ -101,7 +103,7 @@ jobs:
         last_updated=$(date +"%Y-%m-%d %H:%M:%S")
 
         # Update data.json
-        cat <<EOT > /var/www/html/data.json
+        sudo tee /var/www/html/data.json <<EOT
         {
           "summary": {
             "total_success": $total_success,
