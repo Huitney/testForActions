@@ -83,7 +83,7 @@ jobs:
         TABLE_NAME="test_results_${GITHUB_USER:-default_user}"
 
         # 動態組合資料表名稱
-        TABLE_NAME="test_results_${GITHUB_USER}"
+        #TABLE_NAME="test_results_${GITHUB_USER}"
 
         # 檢查資料表是否存在，如果不存在則創建
         TABLE_EXISTS=$(mysql -u ci_user -pci_password -D ci_test_reports -e "SHOW TABLES LIKE '${TABLE_NAME}';" | grep "${TABLE_NAME}" | wc -l)
