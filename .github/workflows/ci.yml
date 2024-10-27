@@ -87,7 +87,7 @@ jobs:
         echo "TABLE_NAME: ${TABLE_NAME}"
 
         # 檢查資料表是否存在，如果不存在則創建
-        TABLE_EXISTS=$(mysql -u ci_user -pci_password -D ci_test_reports -e "SHOW TABLES LIKE '${TABLE_NAME}';" | grep "${TABLE_NAME}" | wc -l)
+        TABLE_EXISTS=$(mysql -u ci_user -pci_password -D ci_test_reports -e "SHOW TABLES LIKE '\`${TABLE_NAME}\`';" | grep "${TABLE_NAME}" | wc -l)
 
         if [ "$TABLE_EXISTS" -eq 0 ]; then
           echo "Table ${TABLE_NAME} does not exist. Creating..."
@@ -106,7 +106,7 @@ jobs:
 
         # Combine all results into a single entry
         mysql -u ci_user -pci_password -D ci_test_reports -e "
-          INSERT INTO ${TABLE_NAME} (test_name, result, status, log)
+          INSERT INTO \`${TABLE_NAME}\` (test_name, result, status, log)
           VALUES 
           ('PHP Unit Tests', '$php_result', '$php_status', LOAD_FILE('/var/www/testForActions/php_test_result.log')),
           ('JavaScript Tests', '$js_result', '$js_status', LOAD_FILE('/var/www/testForActions/js_test_result.log')),
