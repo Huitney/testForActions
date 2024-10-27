@@ -79,11 +79,12 @@ jobs:
         # 獲取 GitHub 使用者名稱
         GITHUB_USER=${{ github.actor }}
         echo "GITHUB_USER: ${GITHUB_USER}"
-        echo "TABLE_NAME: ${TABLE_NAME}"
         TABLE_NAME="test_results_${GITHUB_USER:-default_user}"
+        echo "TABLE_NAME: ${TABLE_NAME}"
 
         # 動態組合資料表名稱
-        #TABLE_NAME="test_results_${GITHUB_USER}"
+        TABLE_NAME="test_results_${GITHUB_USER}"
+        echo "TABLE_NAME: ${TABLE_NAME}"
 
         # 檢查資料表是否存在，如果不存在則創建
         TABLE_EXISTS=$(mysql -u ci_user -pci_password -D ci_test_reports -e "SHOW TABLES LIKE '${TABLE_NAME}';" | grep "${TABLE_NAME}" | wc -l)
