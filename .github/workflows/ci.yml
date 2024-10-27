@@ -121,9 +121,9 @@ jobs:
     - name: Update data.json with combined test results
       run: |
         # Collect summary counts
-        total_success=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM ${TABLE_NAME} WHERE status='success';")
-        total_failure=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM ${TABLE_NAME} WHERE status='failure';")
-        total_errors=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM ${TABLE_NAME} WHERE result LIKE '%FAILURES%' OR result LIKE '%FAIL%';")
+        total_success=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM \`${TABLE_NAME}\` WHERE status='success';")
+        total_failure=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM \`${TABLE_NAME}\` WHERE status='failure';")
+        total_errors=$(mysql -u ci_user -pci_password -D ci_test_reports -s -N -e "SELECT COUNT(*) FROM \`${TABLE_NAME}\` WHERE result LIKE '%FAILURES%' OR result LIKE '%FAIL%';")
         last_updated=$(date +"%Y-%m-%d %H:%M:%S")
 
         # Update data.json
