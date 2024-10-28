@@ -79,7 +79,10 @@ jobs:
         # 獲取 GitHub 使用者名稱
         GITHUB_USER=${{ github.actor }}
         echo "GITHUB_USER: ${GITHUB_USER}"
-        TABLE_NAME="test_results_${GITHUB_USER:-default_user}"
+        # TABLE_NAME="test_results_${GITHUB_USER:-default_user}"
+        
+        # 動態組合資料表名稱
+        TABLE_NAME="test_results_${GITHUB_USER}"
         echo "TABLE_NAME: ${TABLE_NAME}"
 
         # 檢查資料表是否存在，如果不存在則創建
