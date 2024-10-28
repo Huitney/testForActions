@@ -82,14 +82,10 @@ jobs:
         TABLE_NAME="test_results_${GITHUB_USER:-default_user}"
         echo "TABLE_NAME: ${TABLE_NAME}"
 
-        # 動態組合資料表名稱
-        TABLE_NAME="test_results_${GITHUB_USER}"
-        echo "TABLE_NAME: ${TABLE_NAME}"
-
         # 檢查資料表是否存在，如果不存在則創建
-        TABLE_EXISTS=$(mysql -u ci_user -pci_password -D ci_test_reports -e "SHOW TABLES LIKE '\`${TABLE_NAME}\`';" | grep "${TABLE_NAME}" | wc -l)
+        TABLE_EXISTS=$(mysql -u ci_user -pci_password -D ci_test_reports -sse "SHOW TABLES LIKE '${TABLE_NAME}';")
 
-        if [ "$TABLE_EXISTS" -eq 0 ]; then
+        if [ -z "$TABLE_EXISTS" ]; then
           echo "Table ${TABLE_NAME} does not exist. Creating..."
           mysql -u ci_user -pci_password -D ci_test_reports -e "
           CREATE TABLE \`${TABLE_NAME}\` (
