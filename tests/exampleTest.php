@@ -1,5 +1,6 @@
 <?php
 use PHPUnit\Framework\TestCase;
+mb_internal_encoding("UTF-8");
 
 class ExampleTest extends TestCase
 {
@@ -14,6 +15,7 @@ class ExampleTest extends TestCase
         // 確保捕捉的輸出內容是 UTF-8
         $output = mb_convert_encoding($output, 'UTF-8', 'auto');
 
+        // 檢查輸出是否包含 "你好, Alice!"
         $this->assertStringContainsString('你好, Alice!', $output);
     }
 
@@ -28,6 +30,7 @@ class ExampleTest extends TestCase
         // 確保捕捉的輸出內容是 UTF-8
         $output = mb_convert_encoding($output, 'UTF-8', 'auto');
 
+        // 檢查輸出是否包含 "你好, Bob!"
         $this->assertStringContainsString('你好, Bob!', $output);
     }
 }
