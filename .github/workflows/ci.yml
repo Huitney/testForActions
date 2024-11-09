@@ -27,7 +27,7 @@ jobs:
         curl -sS https://getcomposer.org/installer | php
         php composer.phar install
       working-directory: /var/www/testForActions
-      
+
     - name: Install nvm and Node.js
       run: |
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
@@ -66,21 +66,21 @@ jobs:
         php_status="success"
         php_error_count=$(grep -c "FAILURES" php_test_result.log)
         if grep -q "FAILURES" php_test_result.log; then php_status="failure"; fi
-        php_errors=$(grep "Failed asserting" php_test_result.log)
+        php_errors=$(grep "Failed asserting" php_test_result.log | tr -d "'")
 
         # Collect JS results with additional details
         js_result=$(<js_test_result.log)
         js_status="success"
         js_error_count=$(grep -c "FAIL" js_test_result.log)
         if grep -q "FAIL" js_test_result.log; then js_status="failure"; fi
-        js_errors=$(grep "Error:" js_test_result.log)
+        js_errors=$(grep "Error:" js_test_result.log | tr -d "'")
 
         # Collect Snyk results with additional details
         snyk_result=$(<snyk_test_result.log)
         snyk_status="success"
         snyk_error_count=$(grep -c "ERROR" snyk_test_result.log)
         if grep -q "ERROR" snyk_test_result.log; then snyk_status="failure"; fi
-        snyk_errors=$(grep "Error:" snyk_test_result.log)
+        snyk_errors=$(grep "Error:" snyk_test_result.log | tr -d "'")
         
         # Get GitHub username and set dynamic table name
         GITHUB_USER=${{ github.actor }}
