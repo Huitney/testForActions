@@ -61,39 +61,43 @@ jobs:
 
     - name: Collect and insert all test results into MySQL
       run: |
-        # Collect PHP results
+        # Collect PHP results with additional details
         php_result=$(<php_test_result.log)
         php_status="success"
+        php_error_count=$(grep -c "FAILURES" php_test_result.log)
         if grep -q "FAILURES" php_test_result.log; then php_status="failure"; fi
+        php_errors=$(grep "Failed asserting" php_test_result.log)
 
-        # Collect JS results
+        # Collect JS results with additional details
         js_result=$(<js_test_result.log)
         js_status="success"
+        js_error_count=$(grep -c "FAIL" js_test_result.log)
         if grep -q "FAIL" js_test_result.log; then js_status="failure"; fi
+        js_errors=$(grep "Error:" js_test_result.log)
 
-        # Collect Snyk results
+        # Collect Snyk results with additional details
         snyk_result=$(<snyk_test_result.log)
         snyk_status="success"
+        snyk_error_count=$(grep -c "ERROR" snyk_test_result.log)
         if grep -q "ERROR" snyk_test_result.log; then snyk_status="failure"; fi
+        snyk_errors=$(grep "Error:" snyk_test_result.log)
         
-        # 獲取 GitHub 使用者名稱
+        # Get GitHub username and set dynamic table name
         GITHUB_USER=${{ github.actor }}
-        echo "GITHUB_USER: ${GITHUB_USER}"
-        # TABLE_NAME="test_results_${GITHUB_USER:-default_user}"
-        
-        # 動態組合資料表名稱
         TABLE_NAME="test_results_${GITHUB_USER}"
-        echo "TABLE_NAME: ${TABLE_NAME}"
-
-        # 檢查資料表是否存在，如果不存在則創建
+        
+        # Check if the table exists and create it if it doesn't
         TABLE_EXISTS=$(mysql -u ci_user -pci_password -D ci_test_reports -sse "SHOW TABLES LIKE '${TABLE_NAME}';")
-
         if [ -z "$TABLE_EXISTS" ]; then
           echo "Table ${TABLE_NAME} does not exist. Creating..."
           mysql -u ci_user -pci_password -D ci_test_reports -e "
           CREATE TABLE \`${TABLE_NAME}\` (
             id INT AUTO_INCREMENT PRIMARY KEY,
             test_name VARCHAR(255),
+            file_name VARCHAR(255),
+            line INT,
+            error_count INT,
+            errors TEXT,
             result TEXT,
             status VARCHAR(50),
             log TEXT,
@@ -103,13 +107,13 @@ jobs:
           echo "Table ${TABLE_NAME} exists. Proceeding..."
         fi
 
-        # Combine all results into a single entry
+        # Format and insert results into the database
         mysql -u ci_user -pci_password -D ci_test_reports -e "
-          INSERT INTO \`${TABLE_NAME}\` (test_name, result, status, log)
+          INSERT INTO \`${TABLE_NAME}\` (test_name, file_name, line, error_count, errors, result, status, log)
           VALUES 
-          ('PHP Unit Tests', '$php_result', '$php_status', LOAD_FILE('/var/www/testForActions/php_test_result.log')),
-          ('JavaScript Tests', '$js_result', '$js_status', LOAD_FILE('/var/www/testForActions/js_test_result.log')),
-          ('Snyk Security Tests', '$snyk_result', '$snyk_status', LOAD_FILE('/var/www/testForActions/snyk_test_result.log'))
+          ('PHP Unit Tests', 'tests/exampleTest.php', 17, $php_error_count, '$php_errors', '$php_result', '$php_status', LOAD_FILE('/var/www/testForActions/php_test_result.log')),
+          ('JavaScript Tests', 'tests/script.test.js', 1, $js_error_count, '$js_errors', '$js_result', '$js_status', LOAD_FILE('/var/www/testForActions/js_test_result.log')),
+          ('Snyk Security Tests', 'snyk/snykTest.sh', 1, $snyk_error_count, '$snyk_errors', '$snyk_result', '$snyk_status', LOAD_FILE('/var/www/testForActions/snyk_test_result.log'))
         ;"
       working-directory: /var/www/testForActions
       shell: /usr/bin/bash -e {0}
