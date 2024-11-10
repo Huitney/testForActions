@@ -19,7 +19,6 @@ jobs:
       run: |
         sudo chown -R $USER:$USER /var/www/testForActions
         sudo chmod -R 755 /var/www/testForActions
-
     - name: Install PHP dependencies
       run: |
         sudo apt-get update
@@ -61,27 +60,27 @@ jobs:
 
     - name: Collect and insert all test results into MySQL
       run: |
-        # Collect PHP results with additional details
+        # Collect PHP results
         php_result=$(<php_test_result.log | tr -d "'\n\r")
         php_status="success"
-        php_error_count=$(grep -c "FAILURES" php_test_result.log)
+        php_error_count=$(grep -c "FAILURES" php_test_result.log || echo "無")
+        php_error_location=$(grep -oP "at .*\.php:\d+" php_test_result.log || echo "無")
         if grep -q "FAILURES" php_test_result.log; then php_status="failure"; fi
-        php_errors=$(grep "Failed asserting" php_test_result.log | tr -d "'\n\r")
 
-        # Collect JS results with additional details
+        # Collect JS results
         js_result=$(<js_test_result.log | tr -d "'\n\r")
         js_status="success"
-        js_error_count=$(grep -c "FAIL" js_test_result.log)
+        js_error_count=$(grep -c "FAIL" js_test_result.log || echo "無")
+        js_error_location=$(grep -oP "at .*\.js:\d+" js_test_result.log || echo "無")
         if grep -q "FAIL" js_test_result.log; then js_status="failure"; fi
-        js_errors=$(grep "Error:" js_test_result.log | tr -d "'\n\r")
 
-        # Collect Snyk results with additional details
+        # Collect Snyk results
         snyk_result=$(<snyk_test_result.log | tr -d "'\n\r")
         snyk_status="success"
-        snyk_error_count=$(grep -c "ERROR" snyk_test_result.log)
+        snyk_error_count=$(grep -c "ERROR" snyk_test_result.log || echo "無")
+        snyk_error_location=$(grep -oP "at .*:\d+" snyk_test_result.log || echo "無")
         if grep -q "ERROR" snyk_test_result.log; then snyk_status="failure"; fi
-        snyk_errors=$(grep "Error:" snyk_test_result.log | tr -d "'\n\r")
-        
+
         # Get GitHub username and set dynamic table name
         GITHUB_USER=${{ github.actor }}
         TABLE_NAME="test_results_${GITHUB_USER}"
@@ -96,8 +95,8 @@ jobs:
             test_name VARCHAR(255),
             file_name VARCHAR(255),
             line INT,
-            error_count INT,
-            errors TEXT,
+            error_count VARCHAR(50),
+            error_location TEXT,
             result TEXT,
             status VARCHAR(50),
             log TEXT,
@@ -107,19 +106,13 @@ jobs:
           echo "Table ${TABLE_NAME} exists. Proceeding..."
         fi
 
-        # Format and insert results into the database using printf
-        printf -v sql_query "
-          INSERT INTO \`${TABLE_NAME}\` (test_name, file_name, line, error_count, errors, result, status, log)
+        # Insert formatted results into the database
+        mysql -u ci_user -pci_password -D ci_test_reports -e "
+          INSERT INTO \`${TABLE_NAME}\` (test_name, file_name, line, error_count, error_location, result, status, log)
           VALUES 
-          ('PHP Unit Tests', 'tests/exampleTest.php', 17, %d, '%s', '%s', '%s', LOAD_FILE('/var/www/testForActions/php_test_result.log')),
-          ('JavaScript Tests', 'tests/script.test.js', 1, %d, '%s', '%s', '%s', LOAD_FILE('/var/www/testForActions/js_test_result.log')),
-          ('Snyk Security Tests', 'snyk/snykTest.sh', 1, %d, '%s', '%s', '%s', LOAD_FILE('/var/www/testForActions/snyk_test_result.log'))
-        ;" \
-        "$php_error_count" "$php_errors" "$php_result" "$php_status" \
-        "$js_error_count" "$js_errors" "$js_result" "$js_status" \
-        "$snyk_error_count" "$snyk_errors" "$snyk_result" "$snyk_status"
-        
-        # Execute the formatted SQL query
-        mysql -u ci_user -pci_password -D ci_test_reports -e "$sql_query"
+          ('PHP Unit Tests', 'tests/exampleTest.php', 17, '$php_error_count', '$php_error_location', '$php_result', '$php_status', LOAD_FILE('/var/www/testForActions/php_test_result.log')),
+          ('JavaScript Tests', 'tests/script.test.js', 1, '$js_error_count', '$js_error_location', '$js_result', '$js_status', LOAD_FILE('/var/www/testForActions/js_test_result.log')),
+          ('Snyk Security Tests', 'snyk/snykTest.sh', 1, '$snyk_error_count', '$snyk_error_location', '$snyk_result', '$snyk_status', LOAD_FILE('/var/www/testForActions/snyk_test_result.log'))
+        ;"
       working-directory: /var/www/testForActions
       shell: /usr/bin/bash -e {0}
