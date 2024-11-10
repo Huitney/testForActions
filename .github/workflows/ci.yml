@@ -62,25 +62,25 @@ jobs:
     - name: Collect and insert all test results into MySQL
       run: |
         # Collect PHP results with additional details
-        php_result=$(<php_test_result.log)
+        php_result=$(<php_test_result.log | tr -d "'\n\r")
         php_status="success"
         php_error_count=$(grep -c "FAILURES" php_test_result.log)
         if grep -q "FAILURES" php_test_result.log; then php_status="failure"; fi
-        php_errors=$(grep "Failed asserting" php_test_result.log | tr -d "'")
+        php_errors=$(grep "Failed asserting" php_test_result.log | tr -d "'\n\r")
 
         # Collect JS results with additional details
-        js_result=$(<js_test_result.log)
+        js_result=$(<js_test_result.log | tr -d "'\n\r")
         js_status="success"
         js_error_count=$(grep -c "FAIL" js_test_result.log)
         if grep -q "FAIL" js_test_result.log; then js_status="failure"; fi
-        js_errors=$(grep "Error:" js_test_result.log | tr -d "'")
+        js_errors=$(grep "Error:" js_test_result.log | tr -d "'\n\r")
 
         # Collect Snyk results with additional details
-        snyk_result=$(<snyk_test_result.log)
+        snyk_result=$(<snyk_test_result.log | tr -d "'\n\r")
         snyk_status="success"
         snyk_error_count=$(grep -c "ERROR" snyk_test_result.log)
         if grep -q "ERROR" snyk_test_result.log; then snyk_status="failure"; fi
-        snyk_errors=$(grep "Error:" snyk_test_result.log | tr -d "'")
+        snyk_errors=$(grep "Error:" snyk_test_result.log | tr -d "'\n\r")
         
         # Get GitHub username and set dynamic table name
         GITHUB_USER=${{ github.actor }}
@@ -118,7 +118,7 @@ jobs:
         "$php_error_count" "$php_errors" "$php_result" "$php_status" \
         "$js_error_count" "$js_errors" "$js_result" "$js_status" \
         "$snyk_error_count" "$snyk_errors" "$snyk_result" "$snyk_status"
-
+        
         # Execute the formatted SQL query
         mysql -u ci_user -pci_password -D ci_test_reports -e "$sql_query"
       working-directory: /var/www/testForActions
