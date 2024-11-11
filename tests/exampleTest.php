@@ -4,12 +4,14 @@ mb_internal_encoding("UTF-8");
 
 class ExampleTest extends TestCase
 {
+    private $tested_file = '/var/www/testForActions/index.php';
+
     public function testHtmlOutput()
     {
         $_POST['name'] = 'Alice';
 
         ob_start();
-        include '/var/www/testForActions/index.php';
+        include $this->tested_file;
         $output = ob_get_clean();
 
         // 確保捕捉的輸出內容是 UTF-8
@@ -24,7 +26,7 @@ class ExampleTest extends TestCase
         $_POST['name'] = 'Bob';
 
         ob_start();
-        include '/var/www/testForActions/index.php';
+        include $this->tested_file;
         $output = ob_get_clean();
 
         // 確保捕捉的輸出內容是 UTF-8
