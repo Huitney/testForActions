@@ -103,9 +103,7 @@ jobs:
             log TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );"
-        else
-          echo "Table ${TABLE_NAME} exists. Proceeding..."
-        fi
+        
 
         # Insert formatted results into the database
         mysql -u ci_user -pci_password -D ci_test_reports -e "
