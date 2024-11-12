@@ -59,7 +59,6 @@ jobs:
       continue-on-error: true
 
     - name: Collect and insert all test results into MySQL
-      working-directory: /var/www/testForActions
       run: |
         # 檢查檔案是否存在，如果不存在則退出並顯示錯誤
         if [ ! -f php_test_result.log ] || [ ! -f js_test_result.log ] || [ ! -f snyk_test_result.log ]; then
