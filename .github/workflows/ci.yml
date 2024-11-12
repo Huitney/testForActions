@@ -59,14 +59,21 @@ jobs:
       continue-on-error: true
 
     - name: Collect and insert all test results into MySQL
+      working-directory: /var/www/testForActions
       run: |
+        # 檢查檔案是否存在，如果不存在則退出並顯示錯誤
+        if [ ! -f php_test_result.log ] || [ ! -f js_test_result.log ] || [ ! -f snyk_test_result.log ]; then
+          echo "Error: One or more log files are missing."
+          exit 1
+        fi
+
         # Collect PHP results
         php_result=$(<php_test_result.log | tr -d "'\n\r")
         php_status="success"
         php_error_count=$(grep -c "FAILURES" php_test_result.log || echo "0")
         php_error_location=$(grep -oP "at .*\.php:\d+" php_test_result.log || echo "無")
         php_line=$(grep -oP "(?<=\.php:)\d+" php_test_result.log || echo "NULL")
-        php_log=$(cat /var/www/testForActions/php_test_result.log | tr -d "'\n\r")
+        php_log=$(cat php_test_result.log | tr -d "'\n\r")
         if grep -q "FAILURES" php_test_result.log; then php_status="failure"; fi
 
         # Collect JS results
@@ -75,7 +82,7 @@ jobs:
         js_error_count=$(grep -c "FAIL" js_test_result.log || echo "0")
         js_error_location=$(grep -oP "at .*\.js:\d+" js_test_result.log || echo "無")
         js_line=$(grep -oP "(?<=\.js:)\d+" js_test_result.log || echo "NULL")
-        js_log=$(cat /var/www/testForActions/js_test_result.log | tr -d "'\n\r")
+        js_log=$(cat js_test_result.log | tr -d "'\n\r")
         if grep -q "FAIL" js_test_result.log; then js_status="failure"; fi
 
         # Collect Snyk results
@@ -84,11 +91,19 @@ jobs:
         snyk_error_count=$(grep -c "ERROR" snyk_test_result.log || echo "0")
         snyk_error_location=$(grep -oP "at .*:\d+" snyk_test_result.log || echo "無")
         snyk_line=$(grep -oP "(?<=:)\d+" snyk_test_result.log || echo "NULL")
-        snyk_log=$(cat /var/www/testForActions/snyk_test_result.log | tr -d "'\n\r")
+        snyk_log=$(cat snyk_test_result.log | tr -d "'\n\r")
         if grep -q "ERROR" snyk_test_result.log; then snyk_status="failure"; fi
 
+        # Debug prints
+        echo "PHP Result: $php_result"
+        echo "PHP Log: $php_log"
+        echo "JS Result: $js_result"
+        echo "JS Log: $js_log"
+        echo "Snyk Result: $snyk_result"
+        echo "Snyk Log: $snyk_log"
+
         # Get GitHub username and set dynamic table name
-        GITHUB_USER=Huitney
+        GITHUB_USER=${{ github.actor }}
         TABLE_NAME="test_results_${GITHUB_USER}"
 
         # Create table if not exists
@@ -127,5 +142,5 @@ jobs:
         # Execute the formatted SQL query
         mysql -u ci_user -pci_password -D ci_test_reports -e "$sql_query"
         
-        working-directory: /var/www/testForActions
-        shell: /usr/bin/bash -e {0}
+      working-directory: /var/www/testForActions
+      shell: /usr/bin/bash -e {0}
