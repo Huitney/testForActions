@@ -63,39 +63,34 @@ jobs:
         # Collect PHP results
         php_result=$(<php_test_result.log | tr -d "'\n\r")
         php_status="success"
-        php_error_count=$(grep -c "FAILURES" php_test_result.log)
+        php_error_count=$(grep -c "FAILURES" php_test_result.log || echo "0")
         php_error_location=$(grep -oP "at .*\.php:\d+" php_test_result.log || echo "無")
         php_line=$(grep -oP "(?<=\.php:)\d+" php_test_result.log || echo "NULL")
-        php_log=$(cat /var/www/testForActions/php_test_result.log | tr -d "'\n\r")
         if grep -q "FAILURES" php_test_result.log; then php_status="failure"; fi
 
         # Collect JS results
         js_result=$(<js_test_result.log | tr -d "'\n\r")
         js_status="success"
-        js_error_count=$(grep -c "FAIL" js_test_result.log)
+        js_error_count=$(grep -c "FAIL" js_test_result.log || echo "0")
         js_error_location=$(grep -oP "at .*\.js:\d+" js_test_result.log || echo "無")
         js_line=$(grep -oP "(?<=\.js:)\d+" js_test_result.log || echo "NULL")
-        js_log=$(cat /var/www/testForActions/js_test_result.log | tr -d "'\n\r")
         if grep -q "FAIL" js_test_result.log; then js_status="failure"; fi
 
         # Collect Snyk results
         snyk_result=$(<snyk_test_result.log | tr -d "'\n\r")
         snyk_status="success"
-        snyk_error_count=$(grep -c "ERROR" snyk_test_result.log)
+        snyk_error_count=$(grep -c "ERROR" snyk_test_result.log || echo "0")
         snyk_error_location=$(grep -oP "at .*:\d+" snyk_test_result.log || echo "無")
         snyk_line=$(grep -oP "(?<=:)\d+" snyk_test_result.log || echo "NULL")
-        snyk_log=$(cat /var/www/testForActions/snyk_test_result.log | tr -d "'\n\r")
         if grep -q "ERROR" snyk_test_result.log; then snyk_status="failure"; fi
 
         # Get GitHub username and set dynamic table name
-        GITHUB_USER=Huitney
+        GITHUB_USER=${{ github.actor }}
         TABLE_NAME="test_results_${GITHUB_USER}"
 
-        # Create table if not exists
-        TABLE_EXISTS=$(mysql -u ci_user -pci_password -D ci_test_reports -sse "SHOW TABLES LIKE '${TABLE_NAME}';")
-        if [ -z "$TABLE_EXISTS" ]; then
-          echo "Table ${TABLE_NAME} does not exist. Creating..."
-          mysql -u ci_user -pci_password -D ci_test_reports -e "
+        # Drop table if it exists and recreate it with the correct schema
+        mysql -u ci_user -pci_password -D ci_test_reports -e "
+          DROP TABLE IF EXISTS \`${TABLE_NAME}\`;
           CREATE TABLE \`${TABLE_NAME}\` (
             id INT AUTO_INCREMENT PRIMARY KEY,
             test_name VARCHAR(255),
@@ -108,18 +103,15 @@ jobs:
             log TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );"
-        else
-          echo "Table ${TABLE_NAME} exists. Proceeding..."
-        fi
+        
 
         # Insert formatted results into the database
         mysql -u ci_user -pci_password -D ci_test_reports -e "
           INSERT INTO \`${TABLE_NAME}\` (test_name, test_location, line, error_count, error_location, result, status, log)
           VALUES 
-          ('PHP Unit Tests', '$PWD', ${php_line}, '$php_error_count', '$php_error_location', '$php_result', '$php_status', '$php_log'),
-          ('JavaScript Tests', '$PWD', ${js_line}, '$js_error_count', '$js_error_location', '$js_result', '$js_status', '$js_log'),
-          ('Snyk Security Tests', '$PWD', ${snyk_line}, '$snyk_error_count', '$snyk_error_location', '$snyk_result', '$snyk_status', '$snyk_log')
+          ('PHP Unit Tests', '$PWD', ${php_line}, '$php_error_count', '$php_error_location', '$php_result', '$php_status', LOAD_FILE('/var/www/testForActions/php_test_result.log')),
+          ('JavaScript Tests', '$PWD', ${js_line}, '$js_error_count', '$js_error_location', '$js_result', '$js_status', LOAD_FILE('/var/www/testForActions/js_test_result.log')),
+          ('Snyk Security Tests', '$PWD', ${snyk_line}, '$snyk_error_count', '$snyk_error_location', '$snyk_result', '$snyk_status', LOAD_FILE('/var/www/testForActions/snyk_test_result.log'))
         ;"
-
       working-directory: /var/www/testForActions
       shell: /usr/bin/bash -e {0}
