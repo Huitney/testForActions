@@ -88,9 +88,11 @@ jobs:
         GITHUB_USER=${{ github.actor }}
         TABLE_NAME="test_results_${GITHUB_USER}"
 
-        # Drop table if it exists and recreate it with the correct schema
-        mysql -u ci_user -pci_password -D ci_test_reports -e "
-          DROP TABLE IF EXISTS \`${TABLE_NAME}\`;
+         # Check if the table exists and create it if it doesn't
+        TABLE_EXISTS=$(mysql -u ci_user -pci_password -D ci_test_reports -sse "SHOW TABLES LIKE '${TABLE_NAME}';")
+        if [ -z "$TABLE_EXISTS" ]; then
+          echo "Table ${TABLE_NAME} does not exist. Creating..."
+          mysql -u ci_user -pci_password -D ci_test_reports -e "
           CREATE TABLE \`${TABLE_NAME}\` (
             id INT AUTO_INCREMENT PRIMARY KEY,
             test_name VARCHAR(255),
@@ -103,6 +105,9 @@ jobs:
             log TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );"
+        else
+          echo "Table ${TABLE_NAME} exists. Proceeding..."
+        fi
         
 
         # Insert formatted results into the database
