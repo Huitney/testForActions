@@ -69,7 +69,7 @@ jobs:
         # Collect PHP results
         php_result=$(<php_test_result.log | tr -d "'\n\r")
         php_status="success"
-        php_error_count=$(grep -c "FAILURES" php_test_result.log)
+        php_error_count=$(grep -c "FAILURES" php_test_result.log || echo "0")
         php_error_location=$(grep -oP "at .*\.php:\d+" php_test_result.log || echo "無")
         php_line=$(grep -oP "(?<=\.php:)\d+" php_test_result.log || echo "NULL")
         php_log=$(cat php_test_result.log | tr -d "'\n\r")
@@ -78,7 +78,7 @@ jobs:
         # Collect JS results
         js_result=$(<js_test_result.log | tr -d "'\n\r")
         js_status="success"
-        js_error_count=$(grep -c "FAIL" js_test_result.log)
+        js_error_count=$(grep -c "FAIL" js_test_result.log || echo "0")
         js_error_location=$(grep -oP "at .*\.js:\d+" js_test_result.log || echo "無")
         js_line=$(grep -oP "(?<=\.js:)\d+" js_test_result.log || echo "NULL")
         js_log=$(cat js_test_result.log | tr -d "'\n\r")
@@ -87,7 +87,7 @@ jobs:
         # Collect Snyk results
         snyk_result=$(<snyk_test_result.log | tr -d "'\n\r")
         snyk_status="success"
-        snyk_error_count=$(grep -c "ERROR" snyk_test_result.log)
+        snyk_error_count=$(grep -c "ERROR" snyk_test_result.log || echo "0")
         snyk_error_location=$(grep -oP "at .*:\d+" snyk_test_result.log || echo "無")
         snyk_line=$(grep -oP "(?<=:)\d+" snyk_test_result.log || echo "NULL")
         snyk_log=$(cat snyk_test_result.log | tr -d "'\n\r")
