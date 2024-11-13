@@ -43,20 +43,28 @@
 
     // 顯示最近的測試結果
     echo "<h2>Recent Test Results</h2>";
-    $recent_tests = $conn->query("SELECT test_name, status, result FROM `$table_name` ORDER BY id DESC LIMIT 3");
+    $recent_tests = $conn->query("SELECT test_name, test_location, line, error_count, error_location, status, log FROM `$table_name` ORDER BY id DESC LIMIT 3");
 
     echo "<table border='1'>
     <tr>
         <th>Test Name</th>
+        <th>Test Location</th>
+        <th>Line</th>
+        <th>Error Count</th>
+        <th>Error Location</th>
         <th>Status</th>
-        <th>Result</th>
+        <th>Log (excerpt)</th>
     </tr>";
 
     while ($row = $recent_tests->fetch_assoc()) {
         echo "<tr>
-            <td>" . $row["test_name"] . "</td>
-            <td>" . $row["status"] . "</td>
-            <td>" . substr($row["result"], 0, 50) . "...</td>
+            <td>" . htmlspecialchars($row["test_name"]) . "</td>
+            <td>" . htmlspecialchars($row["test_location"]) . "</td>
+            <td>" . htmlspecialchars($row["line"]) . "</td>
+            <td>" . htmlspecialchars($row["error_count"]) . "</td>
+            <td>" . htmlspecialchars($row["error_location"]) . "</td>
+            <td>" . htmlspecialchars($row["status"]) . "</td>
+            <td>" . substr(htmlspecialchars($row["log"]), 0, 50) . "...</td>
         </tr>";
     }
     echo "</table>";
