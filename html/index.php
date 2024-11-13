@@ -13,7 +13,7 @@
         <label for="user">Select User:</label>
         <select name="user" id="user">
             <option value="Huitney">Huitney</option>
-            <option value="">AnotherUser</option>
+            <option value="AnotherUser">AnotherUser</option>
         </select>
         <button type="submit">View Results</button>
     </form>
