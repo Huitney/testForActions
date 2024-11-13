@@ -109,7 +109,6 @@ jobs:
             line INT DEFAULT NULL,
             error_count VARCHAR(50),
             error_location TEXT,
-            result TEXT,
             status VARCHAR(50),
             log TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
