@@ -91,7 +91,7 @@ jobs:
       working-directory: /var/www/testForActions
       shell: /usr/bin/bash -e {0}
     
-    js-tests:
+  js-tests:
     runs-on: self-hosted
     steps:
     - name: Check out code
@@ -178,7 +178,7 @@ jobs:
       working-directory: /var/www/testForActions
       shell: /usr/bin/bash -e {0}
     
-    snyk-security-tests:
+  snyk-security-tests:
     runs-on: self-hosted
     steps:
     - name: Check out code
