@@ -1,4 +1,4 @@
-name: CI/CD Pipeline with Docker
+name: CI/CD Pipeline
 
 on:
   push:
@@ -15,132 +15,242 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4
       
-    - name: Fix Docker Permissions
+    - name: Fix permissions for test directory
       run: |
-        sudo chmod 666 /var/run/docker.sock
+        sudo chown -R $USER:$USER /var/www/testForActions
+        sudo chmod -R 755 /var/www/testForActions
 
-    - name: Run PHP Unit Tests in Docker
+    - name: Install PHP dependencies
       run: |
-        docker run --rm \
-          -v $PWD:/app \
-          -w /app \
-          php:8.3-cli bash -c "
-          apt-get update && apt-get install -y unzip && \
-          curl -sS https://getcomposer.org/installer | php && php composer.phar install && \
-          ./vendor/bin/phpunit tests/exampleTest.php > php_test_result.log 2>&1 || touch php_test_result.log
-        "
+        sudo apt-get update
+        sudo apt-get install -y zip unzip
+        curl -sS https://getcomposer.org/installer | php
+        php composer.phar install
+      working-directory: /var/www/testForActions
 
-    - name: Collect and insert PHP test results into MySQL
+    - name: Run PHP Unit Tests and collect logs
       run: |
-        docker run --rm \
-          -v $PWD:/app \
-          -w /app \
-          mysql:latest bash -c "
-          if [ ! -f php_test_result.log ]; then
-            echo 'Error: php_test_result.log is missing.' && exit 1
-          fi
-          # Extract and insert results into MySQL
-          php_status='success'
-          php_error_count=$(grep -c 'FAILURES' php_test_result.log || echo '0')
-          php_log=\$(cat php_test_result.log | tr -d \"'\n\r\")
-          if grep -q 'FAILURES' php_test_result.log; then php_status='failure'; fi
-          mysql -h localhost -u ci_user -pci_password -D ci_test_reports -e \"
-            CREATE TABLE IF NOT EXISTS test_results_php (
-              id INT AUTO_INCREMENT PRIMARY KEY,
-              status VARCHAR(50),
-              error_count VARCHAR(50),
-              log TEXT,
-              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            INSERT INTO test_results_php (status, error_count, log) VALUES ('$php_status', '$php_error_count', '$php_log');
-          \"
-        "
+        ./vendor/bin/phpunit tests/exampleTest.php > php_test_result.log 2>&1 || touch php_test_result.log
+      working-directory: /var/www/testForActions
+      continue-on-error: true
+      
+    - name: Collect and insert all test results into MySQL
+      run: |
+        # 檢查檔案是否存在，如果不存在則退出並顯示錯誤
+        if [ ! -f php_test_result.log ]; then
+          echo "Error: One or more log files are missing."
+          exit 1
+        fi
 
+        # Collect PHP results
+        php_status="success"
+        php_error_count=$(grep -c "FAILURES" php_test_result.log || echo "0")
+        php_error_location=$(grep -oP "at .*\.php:\d+" php_test_result.log || echo "無")
+        php_line=$(grep -oP "(?<=\.php:)\d+" php_test_result.log || echo "NULL")
+        php_log=$(cat php_test_result.log | tr -d "'\n\r")
+        if grep -q "FAILURES" php_test_result.log; then php_status="failure"; fi
+        
+        # Debug prints
+        echo "PHP Log: $php_log"
+        
+        # Get GitHub username and set dynamic table name
+        GITHUB_USER=${{ github.actor }}
+        TABLE_NAME="test_results_${GITHUB_USER}"
+
+        # Create table if not exists
+        TABLE_EXISTS=$(mysql -u ci_user -pci_password -D ci_test_reports -sse "SHOW TABLES LIKE '${TABLE_NAME}';")
+        if [ -z "$TABLE_EXISTS" ]; then
+          echo "Table ${TABLE_NAME} does not exist. Creating..."
+          mysql -u ci_user -pci_password -D ci_test_reports -e "
+          CREATE TABLE \`${TABLE_NAME}\` (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            test_name VARCHAR(255),
+            test_location VARCHAR(255),
+            line INT DEFAULT NULL,
+            error_count VARCHAR(50),
+            error_location TEXT,
+            status VARCHAR(50),
+            log TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );"
+        else
+          echo "Table ${TABLE_NAME} exists. Proceeding..."
+        fi
+
+        # Format and insert results into the database using printf
+        printf -v sql_query "
+          INSERT INTO \`${TABLE_NAME}\` (test_name, test_location, line, error_count, error_location, status, log)
+          VALUES 
+          ('PHP Unit Tests', '%s', %s, '%s', '%s', '%s', '%s')
+        ;" \
+        "$PWD" "$php_line" "$php_error_count" "$php_error_location" "$php_status" "$php_log"
+
+        # Execute the formatted SQL query
+        mysql -u ci_user -pci_password -D ci_test_reports -e "$sql_query"
+                
+      working-directory: /var/www/testForActions
+      shell: /usr/bin/bash -e {0}
+    
   js-tests:
     runs-on: self-hosted
     steps:
     - name: Check out code
       uses: actions/checkout@v4
+      
+    - name: Fix permissions for test directory
+      run: |
+        sudo chown -R $USER:$USER /var/www/testForActions
+        sudo chmod -R 755 /var/www/testForActions
+
+    - name: Install nvm and Node.js
+      run: |
+        curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+        export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        nvm install --lts
+        nvm use --lts
+      shell: bash
+
+    - name: Install Node.js dependencies
+      run: npm install
+      working-directory: /var/www/testForActions
+
+    - name: Run JavaScript Tests and collect logs
+      run: |
+        npx jest tests/script.test.js > js_test_result.log 2>&1 || touch js_test_result.log
+      working-directory: /var/www/testForActions
+      continue-on-error: true
+      
+    - name: Collect and insert all test results into MySQL
+      run: |
+        # 檢查檔案是否存在，如果不存在則退出並顯示錯誤
+        if [ ! -f js_test_result.log ]; then
+          echo "Error: One or more log files are missing."
+          exit 1
+        fi
+
+        # Collect JS results
+        js_status="success"
+        js_error_count=$(grep -c "FAIL" js_test_result.log || echo "0")
+        js_error_location=$(grep -oP "at .*\.js:\d+" js_test_result.log || echo "無")
+        js_line=$(grep -oP "(?<=\.js:)\d+" js_test_result.log || echo "NULL")
+        js_log=$(cat js_test_result.log | tr -d "'\n\r")
+        if grep -q "FAIL" js_test_result.log; then js_status="failure"; fi
+        
+        # Debug prints
+        echo "JS Log: $js_log"
+        
+        # Get GitHub username and set dynamic table name
+        GITHUB_USER=${{ github.actor }}
+        TABLE_NAME="test_results_${GITHUB_USER}"
+
+        # Create table if not exists
+        TABLE_EXISTS=$(mysql -u ci_user -pci_password -D ci_test_reports -sse "SHOW TABLES LIKE '${TABLE_NAME}';")
+        if [ -z "$TABLE_EXISTS" ]; then
+          echo "Table ${TABLE_NAME} does not exist. Creating..."
+          mysql -u ci_user -pci_password -D ci_test_reports -e "
+          CREATE TABLE \`${TABLE_NAME}\` (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            test_name VARCHAR(255),
+            test_location VARCHAR(255),
+            line INT DEFAULT NULL,
+            error_count VARCHAR(50),
+            error_location TEXT,
+            status VARCHAR(50),
+            log TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );"
+        else
+          echo "Table ${TABLE_NAME} exists. Proceeding..."
+        fi
+
+        # Format and insert results into the database using printf
+        printf -v sql_query "
+          INSERT INTO \`${TABLE_NAME}\` (test_name, test_location, line, error_count, error_location, status, log)
+          VALUES 
+          ('JavaScript Tests', '%s', %s, '%s', '%s', '%s', '%s')
+        ;" \
+        "$PWD" "$js_line" "$js_error_count" "$js_error_location" "$js_status" "$js_log"
+
+        # Execute the formatted SQL query
+        mysql -u ci_user -pci_password -D ci_test_reports -e "$sql_query"
+        
+      working-directory: /var/www/testForActions
+      shell: /usr/bin/bash -e {0}
     
-    - name: Fix Docker Permissions
-      run: |
-        sudo chmod 666 /var/run/docker.sock
-
-    - name: Run JavaScript Tests in Docker
-      run: |
-        docker run --rm \
-          -v $PWD:/app \
-          -w /app \
-          node:lts bash -c "
-          npm install && \
-          npx jest tests/script.test.js > js_test_result.log 2>&1 || touch js_test_result.log
-        "
-
-    - name: Collect and insert JavaScript test results into MySQL
-      run: |
-        docker run --rm \
-          -v $PWD:/app \
-          -w /app \
-          mysql:latest bash -c "
-          if [ ! -f js_test_result.log ]; then
-            echo 'Error: js_test_result.log is missing.' && exit 1
-          fi
-          # Extract and insert results into MySQL
-          js_status='success'
-          js_error_count=$(grep -c 'FAIL' js_test_result.log || echo '0')
-          js_log=\$(cat js_test_result.log | tr -d \"'\n\r\")
-          if grep -q 'FAIL' js_test_result.log; then js_status='failure'; fi
-          mysql -h localhost -u ci_user -pci_password -D ci_test_reports -e \"
-            CREATE TABLE IF NOT EXISTS test_results_js (
-              id INT AUTO_INCREMENT PRIMARY KEY,
-              status VARCHAR(50),
-              error_count VARCHAR(50),
-              log TEXT,
-              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            INSERT INTO test_results_js (status, error_count, log) VALUES ('$js_status', '$js_error_count', '$js_log');
-          \"
-        "
-
   snyk-security-tests:
     runs-on: self-hosted
     steps:
     - name: Check out code
       uses: actions/checkout@v4
       
-    - name: Fix Docker Permissions
+    - name: Fix permissions for test directory
       run: |
-        sudo chmod 666 /var/run/docker.sock
+        sudo chown -R $USER:$USER /var/www/testForActions
+        sudo chmod -R 755 /var/www/testForActions
 
-    - name: Run Snyk Security Tests in Docker
-      run: |
-        docker run --rm \
-          -v $PWD:/app \
-          -w /app \
-          snyk/snyk-cli:latest snyk test > snyk_test_result.log 2>&1 || touch snyk_test_result.log
+    #- name: Authenticate with Snyk
+    #  run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
-    - name: Collect and insert Snyk test results into MySQL
+    - name: Run Snyk Security Tests and collect logs
       run: |
-        docker run --rm \
-          -v $PWD:/app \
-          -w /app \
-          mysql:latest bash -c "
-          if [ ! -f snyk_test_result.log ]; then
-            echo 'Error: snyk_test_result.log is missing.' && exit 1
-          fi
-          # Extract and insert results into MySQL
-          snyk_status='success'
-          snyk_error_count=$(grep -c 'ERROR' snyk_test_result.log || echo '0')
-          snyk_log=\$(cat snyk_test_result.log | tr -d \"'\n\r\")
-          if grep -q 'ERROR' snyk_test_result.log; then snyk_status='failure'; fi
-          mysql -h localhost -u ci_user -pci_password -D ci_test_reports -e \"
-            CREATE TABLE IF NOT EXISTS test_results_snyk (
-              id INT AUTO_INCREMENT PRIMARY KEY,
-              status VARCHAR(50),
-              error_count VARCHAR(50),
-              log TEXT,
-              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            INSERT INTO test_results_snyk (status, error_count, log) VALUES ('$snyk_status', '$snyk_error_count', '$snyk_log');
-          \"
-        "
+        ./snyk/snykTest.sh > snyk_test_result.log 2>&1 || touch snyk_test_result.log
+      working-directory: /var/www/testForActions
+      continue-on-error: true
+
+    - name: Collect and insert all test results into MySQL
+      run: |
+        # 檢查檔案是否存在，如果不存在則退出並顯示錯誤
+        if [ ! -f snyk_test_result.log ]; then
+          echo "Error: One or more log files are missing."
+          exit 1
+        fi
+
+        # Collect Snyk results
+        snyk_status="success"
+        snyk_error_count=$(grep -c "ERROR" snyk_test_result.log || echo "0")
+        snyk_error_location=$(grep -oP "at .*:\d+" snyk_test_result.log || echo "無")
+        snyk_line=$(grep -oP "(?<=:)\d+" snyk_test_result.log || echo "NULL")
+        snyk_log=$(cat snyk_test_result.log | sed ':a;N;$!ba;s/\n/ /g' | tr -d "'\r")
+        if grep -q "ERROR" snyk_test_result.log; then snyk_status="failure"; fi
+
+        # Debug prints
+        echo "Snyk Log: $snyk_log"
+
+        # Get GitHub username and set dynamic table name
+        GITHUB_USER=${{ github.actor }}
+        TABLE_NAME="test_results_${GITHUB_USER}"
+
+        # Create table if not exists
+        TABLE_EXISTS=$(mysql -u ci_user -pci_password -D ci_test_reports -sse "SHOW TABLES LIKE '${TABLE_NAME}';")
+        if [ -z "$TABLE_EXISTS" ]; then
+          echo "Table ${TABLE_NAME} does not exist. Creating..."
+          mysql -u ci_user -pci_password -D ci_test_reports -e "
+          CREATE TABLE \`${TABLE_NAME}\` (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            test_name VARCHAR(255),
+            test_location VARCHAR(255),
+            line INT DEFAULT NULL,
+            error_count VARCHAR(50),
+            error_location TEXT,
+            status VARCHAR(50),
+            log TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );"
+        else
+          echo "Table ${TABLE_NAME} exists. Proceeding..."
+        fi
+
+        # Format and insert results into the database using printf
+        printf -v sql_query "
+          INSERT INTO \`${TABLE_NAME}\` (test_name, test_location, line, error_count, error_location, status, log)
+          VALUES 
+          ('Snyk Security Tests', '%s', %s, '%s', '%s', '%s', '%s')
+        ;" \
+        "$PWD" "$snyk_line" "$snyk_error_count" "$snyk_error_location" "$snyk_status" "$snyk_log"
+
+        # Execute the formatted SQL query
+        mysql -u ci_user -pci_password -D ci_test_reports -e "$sql_query"
+        
+      working-directory: /var/www/testForActions
+      shell: /usr/bin/bash -e {0}
