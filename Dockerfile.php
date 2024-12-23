@@ -6,13 +6,15 @@ WORKDIR /app
 # 複製代碼到容器
 COPY . /app
 
-# 更新系統並安裝必要依賴
+# 更新系統並安裝所需的系統工具
 RUN apt-get update && apt-get install -y \
     zip \
     unzip \
-    php-xml \
-    php-dom \
+    libxml2-dev \
     && apt-get clean
+
+# 安裝 PHP 擴展
+RUN docker-php-ext-install dom
 
 # 安裝 Composer
 RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
