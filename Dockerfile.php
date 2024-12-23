@@ -1,11 +1,24 @@
-FROM php:8.2-cli
+FROM php:8.3-cli
+
+# 設置工作目錄
 WORKDIR /app
+
+# 複製代碼到容器
 COPY . /app
 
-# 安裝 PHP Composer 和所需依賴
-RUN apt-get update && apt-get install -y zip unzip && \
-    curl -sS https://getcomposer.org/installer | php && \
-    php composer.phar install
+# 更新系統並安裝必要依賴
+RUN apt-get update && apt-get install -y \
+    zip \
+    unzip \
+    php-xml \
+    php-dom \
+    && apt-get clean
 
-# 設置正確的權限（視情況需要）
+# 安裝 Composer
+RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
+
+# 安裝專案依賴項
+RUN composer install
+
+# 設置正確的權限（如果需要）
 RUN chown -R www-data:www-data /app && chmod -R 755 /app
