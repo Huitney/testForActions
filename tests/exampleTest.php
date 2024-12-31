@@ -4,7 +4,9 @@ mb_internal_encoding("UTF-8");
 
 class ExampleTest extends TestCase
 {
-    private $tested_file = '/var/www/testForActions/index.php';
+    //private $tested_file = '/var/www/testForActions/index.php';
+	private $tested_file = '/app/index.php';
+
 
     public function testHtmlOutput()
     {
