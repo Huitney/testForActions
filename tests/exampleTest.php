@@ -8,7 +8,9 @@ class ExampleTest extends TestCase
 
     public function testHtmlOutput()
     {
-        $_POST['name'] = 'Alice';
+        $this->assertFileExists($this->tested_file, 'Tested file not found at ' . $this->tested_file);
+		
+		$_POST['name'] = 'Alice';
 
         ob_start();
         include $this->tested_file;
@@ -25,7 +27,9 @@ class ExampleTest extends TestCase
 
     public function testFormSubmission()
     {
-        $_POST['name'] = 'Bob';
+        $this->assertFileExists($this->tested_file, 'Tested file not found at ' . $this->tested_file);
+		
+		$_POST['name'] = 'Bob';
 
         ob_start();
         include $this->tested_file;
@@ -33,6 +37,8 @@ class ExampleTest extends TestCase
 
         // 確保捕捉的輸出內容是 UTF-8
         $output = mb_convert_encoding($output, 'UTF-8', 'auto');
+		
+		var_dump($output);
 
         // 檢查輸出是否包含 "你好, Bob!"
         $this->assertStringContainsString('你好, Bob!', $output);
