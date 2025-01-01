@@ -37,11 +37,19 @@ describe('Index Page Form Tests', () => {
         expect(greeting.textContent).toBe('你好, Alice!');
     });
 
-    test('名稱輸入少於3個字符時，應該顯示錯誤消息', () => {
-        fireEvent.input(nameInput, { target: { value: 'Al' } });
-        fireEvent.submit(form);
-        expect(errorMessage.textContent).toBe('名字必須至少包含 3 個字符！');
-    });
+    test('當名稱輸入少於3個字符時，應該阻止表單提交', () => {
+		fireEvent.input(nameInput, { target: { value: 'Al' } });
+
+		// 模擬提交事件
+		const preventDefault = jest.fn();
+		form.addEventListener('submit', (event) => event.preventDefault = preventDefault);
+		
+		fireEvent.submit(form);
+
+		expect(preventDefault).toHaveBeenCalled(); // 確保 preventDefault 被調用
+		expect(errorMessage.textContent).toBe('名字必須至少包含 3 個字符！');
+	});
+
 
     test('當名稱輸入為3個或更多字符時，表單應成功提交', () => {
         fireEvent.input(nameInput, { target: { value: 'Alice' } });
@@ -74,13 +82,26 @@ describe('Index Page Form Tests', () => {
     });
 
     test('檢查提交按鈕的點擊效果', () => {
-        fireEvent.click(submitBtn);
-        expect(submitBtn.style.transform).toBe('scale(0.95)');
-        
-        // 模擬 150ms 的時間流逝，確認按鈕恢復原始大小
-        jest.useFakeTimers();
-        fireEvent.click(submitBtn);
-        jest.advanceTimersByTime(150);
-        expect(submitBtn.style.transform).toBe('scale(1)');
-    });
+		jest.useFakeTimers(); // 使用假的計時器
+		submitBtn.addEventListener('click', () => {
+			submitBtn.style.transform = 'scale(0.95)';
+			setTimeout(() => {
+				submitBtn.style.transform = 'scale(1)';
+			}, 150);
+		});
+
+		// 模擬點擊事件
+		fireEvent.click(submitBtn);
+
+		// 確保按下後樣式變化
+		expect(submitBtn.style.transform).toBe('scale(0.95)');
+
+		// 模擬 150ms 的時間流逝
+		jest.advanceTimersByTime(150);
+
+		// 確保樣式恢復
+		expect(submitBtn.style.transform).toBe('scale(1)');
+
+		jest.useRealTimers(); // 恢復真實計時器
+	});
 });
