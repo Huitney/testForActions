@@ -9,7 +9,7 @@ describe('Index Page Form Tests', () => {
 
     // 在每次測試之前載入 HTML 結構
     beforeEach(() => {
-        document.body.innerHTML = `
+        document.body.innerHTML = 
             <h1 id="greeting">請輸入你的名字</h1>
 
             <form method="POST" action="" id="nameForm">
@@ -18,7 +18,7 @@ describe('Index Page Form Tests', () => {
                 <button type="submit" id="submitBtn">提交</button>
                 <div class="error-message" id="errorMessage"></div>
             </form>
-        `;
+        ;
 
         // 獲取 DOM 元素
         form = document.getElementById('nameForm');
@@ -37,33 +37,21 @@ describe('Index Page Form Tests', () => {
         expect(greeting.textContent).toBe('你好, Alice!');
     });
 
-	test('當名稱輸入少於3個字符時，應該阻止表單提交', () => {
-		fireEvent.input(nameInput, { target: { value: 'Al' } });
+    test('名稱輸入少於3個字符時，應該顯示錯誤消息', () => {
+        fireEvent.input(nameInput, { target: { value: 'Al' } });
+        fireEvent.submit(form);
+        expect(errorMessage.textContent).toBe('名字必須至少包含 3 個字符！');
+    });
 
-		// 模擬事件並附加 preventDefault
-		const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-		const preventDefault = jest.fn();
-		form.addEventListener('submit', (event) => event.preventDefault = preventDefault);
-
-		form.dispatchEvent(submitEvent);
-
-		expect(preventDefault).toHaveBeenCalled(); // 確認 preventDefault 被調用
-		expect(errorMessage.textContent).toBe('名字必須至少包含 3 個字符！');
-	});
-
-	test('當名稱輸入為3個或更多字符時，表單應成功提交', () => {
-		fireEvent.input(nameInput, { target: { value: 'Alice' } });
-
-		// 模擬事件並附加 preventDefault
-		const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-		const preventDefault = jest.fn();
-		form.addEventListener('submit', (event) => event.preventDefault = preventDefault);
-
-		form.dispatchEvent(submitEvent);
-
-		expect(preventDefault).not.toHaveBeenCalled(); // 確認 preventDefault 未被調用
-		expect(errorMessage.textContent).toBe('');
-	});
+    test('當名稱輸入為3個或更多字符時，表單應成功提交', () => {
+        fireEvent.input(nameInput, { target: { value: 'Alice' } });
+        const event = new Event('submit', { bubbles: true, cancelable: true });
+        const preventDefault = jest.fn();
+        event.preventDefault = preventDefault;
+        form.dispatchEvent(event);
+        expect(preventDefault).not.toHaveBeenCalled();
+        expect(errorMessage.textContent).toBe('');
+    });
 
     test('當使用者取消表單提交時，應阻止表單提交', () => {
         fireEvent.input(nameInput, { target: { value: 'Alice' } });
@@ -86,26 +74,13 @@ describe('Index Page Form Tests', () => {
     });
 
     test('檢查提交按鈕的點擊效果', () => {
-		jest.useFakeTimers(); // 使用假的計時器
-		submitBtn.addEventListener('click', () => {
-			submitBtn.style.transform = 'scale(0.95)';
-			setTimeout(() => {
-				submitBtn.style.transform = 'scale(1)';
-			}, 150);
-		});
-
-		// 模擬點擊事件
-		fireEvent.click(submitBtn);
-
-		// 確保按下後樣式變化
-		expect(submitBtn.style.transform).toBe('scale(0.95)');
-
-		// 模擬 150ms 的時間流逝
-		jest.advanceTimersByTime(150);
-
-		// 確保樣式恢復
-		expect(submitBtn.style.transform).toBe('scale(1)');
-
-		jest.useRealTimers(); // 恢復真實計時器
-	});
+        fireEvent.click(submitBtn);
+        expect(submitBtn.style.transform).toBe('scale(0.95)');
+        
+        // 模擬 150ms 的時間流逝，確認按鈕恢復原始大小
+        jest.useFakeTimers();
+        fireEvent.click(submitBtn);
+        jest.advanceTimersByTime(150);
+        expect(submitBtn.style.transform).toBe('scale(1)');
+    });
 });

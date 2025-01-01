@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:lts
 
 # 設置工作目錄
 WORKDIR /app
