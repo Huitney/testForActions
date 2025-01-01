@@ -37,29 +37,33 @@ describe('Index Page Form Tests', () => {
         expect(greeting.textContent).toBe('你好, Alice!');
     });
 
-    test('當名稱輸入少於3個字符時，應該阻止表單提交', () => {
+	test('當名稱輸入少於3個字符時，應該阻止表單提交', () => {
 		fireEvent.input(nameInput, { target: { value: 'Al' } });
 
-		// 模擬提交事件
+		// 模擬事件並附加 preventDefault
+		const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
 		const preventDefault = jest.fn();
 		form.addEventListener('submit', (event) => event.preventDefault = preventDefault);
-		
-		fireEvent.submit(form);
 
-		expect(preventDefault).toHaveBeenCalled(); // 確保 preventDefault 被調用
+		form.dispatchEvent(submitEvent);
+
+		expect(preventDefault).toHaveBeenCalled(); // 確認 preventDefault 被調用
 		expect(errorMessage.textContent).toBe('名字必須至少包含 3 個字符！');
 	});
 
+	test('當名稱輸入為3個或更多字符時，表單應成功提交', () => {
+		fireEvent.input(nameInput, { target: { value: 'Alice' } });
 
-    test('當名稱輸入為3個或更多字符時，表單應成功提交', () => {
-        fireEvent.input(nameInput, { target: { value: 'Alice' } });
-        const event = new Event('submit', { bubbles: true, cancelable: true });
-        const preventDefault = jest.fn();
-        event.preventDefault = preventDefault;
-        form.dispatchEvent(event);
-        expect(preventDefault).not.toHaveBeenCalled();
-        expect(errorMessage.textContent).toBe('');
-    });
+		// 模擬事件並附加 preventDefault
+		const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+		const preventDefault = jest.fn();
+		form.addEventListener('submit', (event) => event.preventDefault = preventDefault);
+
+		form.dispatchEvent(submitEvent);
+
+		expect(preventDefault).not.toHaveBeenCalled(); // 確認 preventDefault 未被調用
+		expect(errorMessage.textContent).toBe('');
+	});
 
     test('當使用者取消表單提交時，應阻止表單提交', () => {
         fireEvent.input(nameInput, { target: { value: 'Alice' } });
