@@ -1,0 +1,11 @@
+{
+  "users": [
+    { "id": 1, "name": "測試用戶1", "email": "test1@example.com" },
+    { "id": 2, "name": "測試用戶2", "email": "test2@example.com" },
+    { "id": 3, "name": "測試用戶3", "email": "test3@example.com" }
+  ],
+  "products": [
+    { "id": 101, "name": "測試產品A", "price": 1000 },
+    { "id": 102, "name": "測試產品B", "price": 2000 }
+  ]
+}
