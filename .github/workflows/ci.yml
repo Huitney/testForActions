@@ -114,6 +114,11 @@ jobs:
     - name: Install Node.js dependencies
       run: npm install
       working-directory: /var/www/testForActions
+      
+    - name: Install Puppeteer
+      run: npm install puppeteer
+      working-directory: /var/www/testForActions
+
 
     - name: Run JavaScript Tests and collect logs
       run: |
