@@ -176,6 +176,8 @@ jobs:
           ('JavaScript Tests', '%s', %s, '%s', '%s', '%s', '%s')
         ;" \
         "$PWD" "$js_line" "$js_error_count" "$js_error_location" "$js_status" "$js_log"
+        
+        sql_query=$(echo "$sql_query" | tr -d '\n')
 
         # Execute the formatted SQL query
         mysql -u ci_user -pci_password -D ci_test_reports -e "$sql_query"
@@ -253,6 +255,8 @@ jobs:
           ('Snyk Security Tests', '%s', %s, '%s', '%s', '%s', '%s')
         ;" \
         "$PWD" "$snyk_line" "$snyk_error_count" "$snyk_error_location" "$snyk_status" "$snyk_log"
+        
+        sql_query=$(echo "$sql_query" | tr -d '\n')
 
         # Execute the formatted SQL query
         mysql -u ci_user -pci_password -D ci_test_reports -e "$sql_query"
