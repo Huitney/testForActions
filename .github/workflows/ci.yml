@@ -218,6 +218,7 @@ jobs:
         snyk_error_count=$(grep -c "ERROR" snyk_test_result.log || echo "0")
         snyk_error_location=$(grep -oP "at .*:\d+" snyk_test_result.log || echo "無")
         snyk_line=$(grep -oP "(?<=:)\d+" snyk_test_result.log | tr '\n' ',' | sed 's/,$//' || echo "NULL")
+        snyk_line="'$snyk_line'"
         snyk_log=$(cat snyk_test_result.log | sed ':a;N;$!ba;s/\n/ /g' | tr -d "'\r")
         if grep -q "ERROR" snyk_test_result.log; then snyk_status="failure"; fi
 
