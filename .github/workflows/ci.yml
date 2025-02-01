@@ -256,10 +256,10 @@ jobs:
         ;" \
         "$PWD" "${snyk_line:-NULL}" "$snyk_error_count" "$snyk_error_location" "$snyk_status" "$snyk_log"
         
+        sql_query=$(echo "$sql_query" | tr -d '\n')
+        
         echo "DEBUG: snyk_line = $snyk_line"
         echo "DEBUG: sql_query = $sql_query"
-        
-        sql_query=$(echo "$sql_query" | tr -d '\n')
 
         # Execute the formatted SQL query
         mysql -u ci_user -pci_password -D ci_test_reports -e "$sql_query"
