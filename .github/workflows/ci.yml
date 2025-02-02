@@ -46,7 +46,8 @@ jobs:
         php_status="success"
         php_error_count=$(grep -c "FAILURES" php_test_result.log || echo "0")
         php_error_location=$(grep -oP "at .*\.php:\d+" php_test_result.log || echo "無")
-        php_line=$(grep -oP "(?<=\.php:)\d+" php_test_result.log || echo "NULL")
+        php_line=$(grep -oP "(?<=:)\d+" php_test_result.log | tr '\n' ',' | sed 's/,$//' || echo "NULL")
+        php_line="'$php_line'"
         php_log=$(cat php_test_result.log | tr -d "'\n\r")
         if grep -q "FAILURES" php_test_result.log; then php_status="failure"; fi
         
@@ -138,7 +139,8 @@ jobs:
         js_status="success"
         js_error_count=$(grep -c "FAIL" js_test_result.log || echo "0")
         js_error_location=$(grep -oP "at .*\.js:\d+" js_test_result.log || echo "無")
-        js_line=$(grep -oP "(?<=\.js:)\d+" js_test_result.log || echo "NULL")
+        js_line=$(grep -oP "(?<=:)\d+" js_test_result.log | tr '\n' ',' | sed 's/,$//' || echo "NULL")
+        js_line="'$js_line'"
         js_log=$(cat js_test_result.log | tr -d "'\n\r")
         if grep -q "FAIL" js_test_result.log; then js_status="failure"; fi
         
@@ -259,8 +261,6 @@ jobs:
         
         sql_query=$(echo "$sql_query" | tr -d '\n')
         
-        echo "DEBUG: snyk_line = $snyk_line"
-        echo "DEBUG: sql_query = $sql_query"
 
         # Execute the formatted SQL query
         mysql -u ci_user -pci_password -D ci_test_reports -e "$sql_query"
