@@ -8,7 +8,11 @@ describe('測試網站自動化測試', () => {
   let page;
 
   beforeAll(async () => {
-    browser = await puppeteer.launch({ headless: true });
+    browser = await puppeteer.launch({
+      executablePath: '/root/.cache/puppeteer/chrome/linux-127.0.6533.88/chrome-linux64/chrome', // 指定 Chromium
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
     page = await browser.newPage();
     await page.goto('http://140.129.13.169/test-website/index.php');
   });
