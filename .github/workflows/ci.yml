@@ -37,6 +37,8 @@ jobs:
     
   js-tests:
     runs-on: self-hosted
+    if: ${{ always() }}
+    needs: [php-tests]
     steps:
     - name: Check out code
       uses: actions/checkout@v4
@@ -73,6 +75,8 @@ jobs:
     
   snyk-security-tests:
     runs-on: self-hosted
+    if: ${{ always() }}
+    needs: [php-tests, js-tests]
     steps:
     - name: Check out code
       uses: actions/checkout@v4
