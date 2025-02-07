@@ -18,8 +18,11 @@ if (isset($_POST['name'])) {
 <body>
     <h1>歡迎來到測試網站</h1>
     <p>本網站用於測試自動化測試流程，包含多個網頁、圖片及測試腳本。</p>
-    
-    <img src="assets/img/large-image1.jpg" alt="測試圖片" width="600px">
+	
+	<?php
+    $imagePath = "assets/img/large-image1.jpg";
+    ?>
+    <img src="<?php echo file_exists($imagePath) ? $imagePath : 'assets/img/default.png'; ?>" alt="測試圖片" width="600px">
     
     <form method="POST" action="process.php">
         <label for="name">姓名:</label>
