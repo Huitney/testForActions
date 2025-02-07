@@ -35,7 +35,9 @@ jobs:
           line=$(grep -oP "(?<=:)\d+" "$log_file" | tr '\n' ',' | sed 's/,$//' || echo "NULL")
           log_content=$(tr -d "'\n\r" < "$log_file")
 
-          if grep -q "ERROR\|FAIL" "$log_file"; then status="failure"; fi
+          if grep -q "ERROR\|FAIL" "$log_file" || grep -q "FAILURES" "$log_file" || grep -q "Deprecation Notice" "$log_file"; then
+            status="failure"
+          fi
 
           echo "('$test_name', '$LOG_DIR', '$line', '$error_count', '$error_location', '$status', '$log_content')"
         }

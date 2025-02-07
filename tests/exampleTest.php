@@ -2,7 +2,7 @@
 use PHPUnit\Framework\TestCase;
 mb_internal_encoding("UTF-8");
 
-class WebsiteTest extends TestCase {
+class ExampleTest extends TestCase {
     public function testHomePageLoads() {
         $response = file_get_contents('http://140.129.13.169/test-website/index.php');
         $this->assertStringContainsString('歡迎來到測試網站', $response);
