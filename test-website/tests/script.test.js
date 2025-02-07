@@ -9,7 +9,7 @@ describe('測試網站自動化測試', () => {
 
   beforeAll(async () => {
     browser = await puppeteer.launch({
-      executablePath: '/root/.cache/puppeteer/chrome/linux-127.0.6533.88/chrome-linux64/chrome', // 指定 Chromium
+      executablePath: '/usr/bin/chromium-browser',
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
