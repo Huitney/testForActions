@@ -24,7 +24,7 @@ class ExampleTest extends TestCase {
     }
 
     public function testImageExists() {
-        $headers = get_headers('http://140.129.13.169/test-website/assets/img/large-image1.jpg', 1);
+        $headers = get_headers('http://140.129.13.169/test-website/assets/img/default.png', 1);
         $this->assertTrue(strpos($headers[0], "200") !== false);
     }
 }
