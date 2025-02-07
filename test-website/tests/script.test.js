@@ -9,7 +9,7 @@ describe('測試網站自動化測試', () => {
 
   beforeAll(async () => {
     browser = await puppeteer.launch({
-      executablePath: '/usr/bin/chromium-browser',
+      //executablePath: '/usr/bin/chromium-browser',
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
