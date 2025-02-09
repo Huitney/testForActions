@@ -73,7 +73,7 @@ jobs:
     - name: Run JavaScript Tests and collect logs
       run: |
         js_start=$(date +%s.%N)
-        npx jest tests/script.test.js > /var/www/testForActions/js_test_result.log 2>&1 || touch /var/www/testForActions/js_test_result.log
+        npx --no-install jest tests/script.test.js > /var/www/testForActions/js_test_result.log 2>&1 || touch /var/www/testForActions/js_test_result.log
         js_end=$(date +%s.%N)
         js_duration=$(echo "$js_end - $js_start" | bc)
         echo "JS Time: ${js_duration}s"
