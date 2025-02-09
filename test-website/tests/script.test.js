@@ -9,7 +9,7 @@ describe('測試網站自動化測試', () => {
 
   beforeAll(async () => {
     browser = await puppeteer.launch({
-      //executablePath: '/usr/bin/chromium-browser',
+      executablePath: '/snap/bin/chromium',
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
@@ -18,7 +18,9 @@ describe('測試網站自動化測試', () => {
   });
 
   afterAll(async () => {
-    if (browser) await browser.close();
+    if (browser) {
+      await browser.close();
+    }
   });
 
   test('檢查首頁標題', async () => {
