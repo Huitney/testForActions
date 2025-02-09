@@ -18,7 +18,7 @@ describe('測試網站自動化測試', () => {
   });
 
   afterAll(async () => {
-    await browser.close();
+    if (browser) await browser.close();
   });
 
   test('檢查首頁標題', async () => {
