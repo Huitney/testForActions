@@ -25,6 +25,10 @@ unset($_SESSION['errorMessage']);
 </head>
 <body>
     <h1>歡迎來到測試網站</h1>
+	<?php
+	$imagePath = "assets/img/large-image1.jpg";
+	?>
+	<img src="<?php echo file_exists($imagePath) ? $imagePath : 'assets/img/default.png'; ?>" alt="測試圖片" width="600px">
     
     <?php if (!empty($errorMessage)) : ?>
         <div id="errorMessage" style="color: red;"><?php echo $errorMessage; ?></div>
