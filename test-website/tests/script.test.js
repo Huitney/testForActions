@@ -44,7 +44,8 @@ describe('測試網站自動化測試', () => {
             page.click('button[type="submit"]')
         ]);
 
-        const responseText = await page.textContent('h1');
+        await page.waitForSelector('h1', { timeout: 20000 }); // 確保 h1 存在
+		const responseText = await page.textContent('h1');
         expect(responseText).toContain('你好, 測試名稱!');
     });
 
