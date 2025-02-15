@@ -16,6 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['name'])) {
     $_SESSION['errorMessage'] = '請提交你的姓名';
 }
 
-// 處理完後導回 index.php
+// **確保 session 正確寫入**
+session_write_close();
 header('Location: index.php');
 exit();
