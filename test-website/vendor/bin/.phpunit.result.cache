@@ -1,0 +1,1 @@
+{"version":1,"defects":{"ExampleTest::testFormSubmission":7,"ExampleTest::testImageExists":7},"times":{"ExampleTest::testHomePageLoads":0.002,"ExampleTest::testFormSubmission":0.003,"ExampleTest::testImageExists":0}}
