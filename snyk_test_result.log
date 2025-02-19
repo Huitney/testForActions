@@ -1,0 +1,90 @@
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Symfony/Component/Console/Command/DumpCompletionCommand.php:48
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Symfony/Component/Console/Command/DumpCompletionCommand.php:56
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Composer/Autoload/AutoloadGenerator.php:879
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Composer/Autoload/AutoloadGenerator.php:884
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Symfony/Component/Console/Command/DumpCompletionCommand.php:48
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Symfony/Component/Console/Command/DumpCompletionCommand.php:56
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Composer/Autoload/AutoloadGenerator.php:879
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Composer/Autoload/AutoloadGenerator.php:884
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Symfony/Component/Console/Command/DumpCompletionCommand.php:48
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Symfony/Component/Console/Command/DumpCompletionCommand.php:56
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Composer/Autoload/AutoloadGenerator.php:879
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Composer/Autoload/AutoloadGenerator.php:884
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Symfony/Component/Console/Command/DumpCompletionCommand.php:48
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Symfony/Component/Console/Command/DumpCompletionCommand.php:56
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Composer/Autoload/AutoloadGenerator.php:879
+Deprecation Notice: Using ${var} in strings is deprecated, use {$var} instead in /usr/share/php/Composer/Autoload/AutoloadGenerator.php:884
+
+Testing /var/www/html/test-website...
+
+Organization:      huitney
+Package manager:   composer
+Target file:       composer.lock
+Project name:      isrclab/testforactions
+Open source:       no
+Project path:      /var/www/html/test-website
+Licenses:          enabled
+
+✔ Tested /var/www/html/test-website for known issues, no vulnerable paths found.
+
+-------------------------------------------------------
+
+Testing /var/www/html/test-website...
+
+Organization:      huitney
+Package manager:   npm
+Target file:       package-lock.json
+Project name:      package.json
+Open source:       no
+Project path:      /var/www/html/test-website
+Licenses:          enabled
+
+✔ Tested 3 dependencies for known issues, no vulnerable paths found.
+
+-------------------------------------------------------
+
+Testing /var/www/html/test-website...
+
+Organization:      huitney
+Package manager:   composer
+Target file:       vendor/phar-io/manifest/composer.lock
+Project name:      phar-io/manifest
+Open source:       no
+Project path:      /var/www/html/test-website
+Licenses:          enabled
+
+✔ Tested 6 dependencies for known issues, no vulnerable paths found.
+
+-------------------------------------------------------
+
+Testing /var/www/html/test-website...
+
+Organization:      huitney
+Package manager:   composer
+Target file:       vendor/phpunit/phpunit/composer.lock
+Project name:      phpunit/phpunit
+Open source:       no
+Project path:      /var/www/html/test-website
+Licenses:          enabled
+
+✔ Tested 36 dependencies for known issues, no vulnerable paths found.
+
+-------------------------------------------------------
+
+Testing /var/www/html/test-website...
+
+Organization:      huitney
+Package manager:   composer
+Target file:       vendor/theseer/tokenizer/composer.lock
+Project name:      theseer/tokenizer
+Open source:       no
+Project path:      /var/www/html/test-website
+Licenses:          enabled
+
+✔ Tested 4 dependencies for known issues, no vulnerable paths found.
+
+
+Tested 5 projects, no vulnerable paths were found.
+
+
+

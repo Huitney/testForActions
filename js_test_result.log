@@ -1,0 +1,123 @@
+FAIL tests/script.test.js
+  測試網站自動化測試
+    ✕ 測試錯誤提交（少於 3 個字符）
+    ✕ 檢查正確提交是否顯示歡迎訊息
+    ✕ 檢查首頁標題
+    ✕ 檢查首頁是否包含關鍵內容 (1 ms)
+    ✕ 檢查圖片是否載入成功
+
+  ● 測試網站自動化測試 › 測試錯誤提交（少於 3 個字符）
+
+    browserType.launch: Executable doesn't exist at /home/isrclab/.cache/ms-playwright/chromium_headless_shell-1155/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    [0m [90m 11 |[39m
+     [90m 12 |[39m     beforeAll([36masync[39m () [33m=>[39m {
+    [31m[1m>[22m[39m[90m 13 |[39m         browser [33m=[39m [36mawait[39m chromium[33m.[39mlaunch({
+     [90m    |[39m                                  [31m[1m^[22m[39m
+     [90m 14 |[39m             headless[33m:[39m [36mtrue[39m[33m,[39m
+     [90m 15 |[39m             args[33m:[39m [[32m'--no-sandbox'[39m[33m,[39m [32m'--disable-setuid-sandbox'[39m]
+     [90m 16 |[39m         })[33m;[39m[0m
+
+      at Object.launch (tests/script.test.js:13:34)
+
+  ● 測試網站自動化測試 › 檢查正確提交是否顯示歡迎訊息
+
+    browserType.launch: Executable doesn't exist at /home/isrclab/.cache/ms-playwright/chromium_headless_shell-1155/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    [0m [90m 11 |[39m
+     [90m 12 |[39m     beforeAll([36masync[39m () [33m=>[39m {
+    [31m[1m>[22m[39m[90m 13 |[39m         browser [33m=[39m [36mawait[39m chromium[33m.[39mlaunch({
+     [90m    |[39m                                  [31m[1m^[22m[39m
+     [90m 14 |[39m             headless[33m:[39m [36mtrue[39m[33m,[39m
+     [90m 15 |[39m             args[33m:[39m [[32m'--no-sandbox'[39m[33m,[39m [32m'--disable-setuid-sandbox'[39m]
+     [90m 16 |[39m         })[33m;[39m[0m
+
+      at Object.launch (tests/script.test.js:13:34)
+
+  ● 測試網站自動化測試 › 檢查首頁標題
+
+    browserType.launch: Executable doesn't exist at /home/isrclab/.cache/ms-playwright/chromium_headless_shell-1155/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    [0m [90m 11 |[39m
+     [90m 12 |[39m     beforeAll([36masync[39m () [33m=>[39m {
+    [31m[1m>[22m[39m[90m 13 |[39m         browser [33m=[39m [36mawait[39m chromium[33m.[39mlaunch({
+     [90m    |[39m                                  [31m[1m^[22m[39m
+     [90m 14 |[39m             headless[33m:[39m [36mtrue[39m[33m,[39m
+     [90m 15 |[39m             args[33m:[39m [[32m'--no-sandbox'[39m[33m,[39m [32m'--disable-setuid-sandbox'[39m]
+     [90m 16 |[39m         })[33m;[39m[0m
+
+      at Object.launch (tests/script.test.js:13:34)
+
+  ● 測試網站自動化測試 › 檢查首頁是否包含關鍵內容
+
+    browserType.launch: Executable doesn't exist at /home/isrclab/.cache/ms-playwright/chromium_headless_shell-1155/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    [0m [90m 11 |[39m
+     [90m 12 |[39m     beforeAll([36masync[39m () [33m=>[39m {
+    [31m[1m>[22m[39m[90m 13 |[39m         browser [33m=[39m [36mawait[39m chromium[33m.[39mlaunch({
+     [90m    |[39m                                  [31m[1m^[22m[39m
+     [90m 14 |[39m             headless[33m:[39m [36mtrue[39m[33m,[39m
+     [90m 15 |[39m             args[33m:[39m [[32m'--no-sandbox'[39m[33m,[39m [32m'--disable-setuid-sandbox'[39m]
+     [90m 16 |[39m         })[33m;[39m[0m
+
+      at Object.launch (tests/script.test.js:13:34)
+
+  ● 測試網站自動化測試 › 檢查圖片是否載入成功
+
+    browserType.launch: Executable doesn't exist at /home/isrclab/.cache/ms-playwright/chromium_headless_shell-1155/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     npx playwright install                                              ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    [0m [90m 11 |[39m
+     [90m 12 |[39m     beforeAll([36masync[39m () [33m=>[39m {
+    [31m[1m>[22m[39m[90m 13 |[39m         browser [33m=[39m [36mawait[39m chromium[33m.[39mlaunch({
+     [90m    |[39m                                  [31m[1m^[22m[39m
+     [90m 14 |[39m             headless[33m:[39m [36mtrue[39m[33m,[39m
+     [90m 15 |[39m             args[33m:[39m [[32m'--no-sandbox'[39m[33m,[39m [32m'--disable-setuid-sandbox'[39m]
+     [90m 16 |[39m         })[33m;[39m[0m
+
+      at Object.launch (tests/script.test.js:13:34)
+
+Test Suites: 1 failed, 1 total
+Tests:       5 failed, 5 total
+Snapshots:   0 total
+Time:        0.383 s, estimated 1 s
+Ran all test suites matching /tests\/script.test.js/i.
