@@ -1,0 +1,37 @@
+PHPUnit 11.5.6 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.14
+
+.F.                                                                 3 / 3 (100%)
+
+Time: 00:00.006, Memory: 8.00 MB
+
+There was 1 failure:
+
+1) ExampleTest::testFormSubmission
+Failed asserting that '<!DOCTYPE html>\n
+<html lang="zh">\n
+<head>\n
+    <meta charset="UTF-8">\n
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n
+    <title>測試網站首頁</title>\n
+</head>\n
+<body>\n
+    <h1>歡迎來到測試網站</h1>\n
+		<img src="assets/img/default.png" alt="測試圖片" width="600px">\n
+    \n
+    \n
+    \n
+    <form method="POST" action="process.php">\n
+        <label for="name">姓名:</label>\n
+        <input type="text" id="name" name="name" required>\n
+        <button type="submit">提交</button>\n
+    </form>\n
+</body>\n
+</html>\n
+' [UTF-8](length: 539) contains "你好, 測試名稱!" [UTF-8](length: 21).
+
+/var/www/html/test-website/tests/exampleTest.php:23
+
+FAILURES!
+Tests: 3, Assertions: 3, Failures: 1.

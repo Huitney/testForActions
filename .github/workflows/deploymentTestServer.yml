@@ -1,0 +1,28 @@
+name: deployment test server
+on:
+  push:
+    branches:
+      - master
+    
+jobs:
+  deployment:
+    runs-on: self-hosted
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+      
+    - name: pull the code
+      run: |
+        
+        git satsh
+        git pull origin master
+        
+      working-directory: /var/www/testForActions
+    
+    - name: move the code
+      run: |
+        
+        rm -r .
+        mv /var/www/testForActions/test-website .
+        
+      working-directory: /var/www/html/test-website

@@ -1,12 +1,9 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
+  workflow_run:
+    workflows: ["deployment test server"]
+    types: completed
 
 jobs:
   php-tests:

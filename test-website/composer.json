@@ -1,0 +1,12 @@
+{
+    "name": "isrclab/testforactions",
+    "version":"1.0.0",
+    "autoload": {
+        "psr-4": {
+            "Test\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
+    }
+}
