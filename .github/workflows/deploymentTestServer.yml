@@ -13,7 +13,6 @@ jobs:
       
     - name: pull the code
       run: |
-        
         git stash
         git pull origin master
         
@@ -21,7 +20,6 @@ jobs:
     
     - name: move the code
       run: |
-        
         rm -r .
         mv /var/www/testForActions/test-website .
         
