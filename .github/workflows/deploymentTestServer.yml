@@ -24,7 +24,7 @@ jobs:
     
     - name: move the code
       run: |
-        rm -r .
-        mv /var/www/testForActions/test-website .
+        rm -r ./test-website
+        mv /var/www/testForActions/test-website ./test-website
         
-      working-directory: /var/www/html/test-website
+      working-directory: /var/www/html
