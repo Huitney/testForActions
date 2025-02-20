@@ -11,6 +11,10 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4
       
+    - name: Fix Git permissions
+      run: sudo chown -R $(whoami) /var/www/testForActions/.git
+      working-directory: /var/www/testForActions
+      
     - name: pull the code
       run: |
         git stash
