@@ -21,6 +21,9 @@ jobs:
         git pull origin master
         
       working-directory: /var/www/testForActions
+      
+    - name: Fix permissions for /var/www/html
+      run: sudo chown -R $(whoami) /var/www/html
     
     - name: move the code
       run: |
