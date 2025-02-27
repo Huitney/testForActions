@@ -35,7 +35,14 @@ jobs:
       working-directory: /var/www/html/test-website
       continue-on-error: true
       
-    
+    - name: Insert test results into MySQL
+      uses: ./.github/workflows/insertSQL.yml
+      with:
+        name: 'php'
+        
+    - name: Store PHP Test Status
+      run: echo "PHP_TEST_STATUS=${{ needs.insert-SQL.outputs.testResult }}" >> $GITHUB_ENV
+      
   js-tests:
     runs-on: self-hosted
     if: ${{ always() }}
@@ -49,24 +56,16 @@ jobs:
         sudo chown -R $USER:$USER /var/www/html/test-website
         sudo chmod -R 755 /var/www/html/test-website
 
-    - name: Install nvm and Node.js
+    - name: Install Node.js dependencies
       run: |
         curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
         export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
         nvm install --lts
         nvm use --lts
-      shell: bash
-
-    - name: Install Node.js dependencies
-      run: npm install
+        npm install
       working-directory: /var/www/html/test-website
       
-    - name: Install Puppeteer
-      run: npm install puppeteer
-      working-directory: /var/www/html/test-website
-
-
     - name: Run JavaScript Tests and collect logs
       run: |
         js_start=$(date +%s.%N)
@@ -77,7 +76,14 @@ jobs:
       working-directory: /var/www/html/test-website
       continue-on-error: true
       
-    
+    - name: Insert test results into MySQL
+      uses: ./.github/workflows/insertSQL.yml
+      with:
+        name: 'js'
+        
+    - name: Store JS Test Status
+      run: echo "JS_TEST_STATUS=${{ needs.insert-SQL.outputs.testResult }}" >> $GITHUB_ENV
+      
   snyk-security-tests:
     runs-on: self-hosted
     if: ${{ always() }}
@@ -100,3 +106,22 @@ jobs:
         echo "Snyk Time: ${snyk_duration}s"
       working-directory: /var/www/html/test-website
       continue-on-error: true
+      
+    - name: Insert test results into MySQL
+      uses: ./.github/workflows/insertSQL.yml
+      with:
+        name: 'snyk'
+        
+    - name: Store Snyk Test Status
+      run: echo "SNYK_TEST_STATUS=${{ needs.insert-SQL.outputs.testResult }}" >> $GITHUB_ENV
+
+  deploy:
+    runs-on: self-hosted
+    needs: [php-tests, js-tests, snyk-security-tests]
+    if: ${{ env.PHP_TEST_STATUS == 'success' && env.JS_TEST_STATUS == 'success' && env.SNYK_TEST_STATUS == 'success' }}
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+
+    - name: Run Continuous Deployment
+      uses: ./.github/workflows/cdN.yml

@@ -1,70 +1,74 @@
 name: insertSQL
 
 on:
-  workflow_run:
-    workflows: ["CI Pipeline"]
-    types: completed
+  workflow_call:
+    inputs:
+      name: 
+        description: 'Name of test'
+        required: true
+        type: 'string'
+    
+    outputs:
+      testResult: 
+        description: 'Test result'
+        value: ${{ jobs.insert-SQL.outputs.testResult }}
     
 jobs:
   insert-SQL:
     runs-on: self-hosted
+    outputs:
+      testResult: ${{ steps.collectResult.outputs.status }}
     steps:
     - name: Check out code
       uses: actions/checkout@v4
       
-    - name: Collect and insert all test results into MySQL
+    - name: Collect and insert test results into MySQL
+      id: collectResult
       run: |
-        
         LOG_DIR="/var/www/testForActions"
-        GITHUB_USER=${{ github.actor }}
+        LOG_FILE="${LOG_DIR}/${{ inputs.name }}_test_result.log"
+        GITHUB_USER="${{ github.actor }}"
         TABLE_NAME="test_results_${GITHUB_USER}"
-        
-        for file in php_test_result.log js_test_result.log snyk_test_result.log; do
-          if [ ! -f "$LOG_DIR/$file" ]; then
-            echo "Error: $file is missing."
-            exit 1
-          fi
-        done
 
-        collect_results() {
-          local test_name="$1"
-          local log_file="$LOG_DIR/$2"
+        if [ ! -f "$LOG_FILE" ]; then
+          echo "Error: $LOG_FILE is missing."
+          echo "::set-output name=status::error"
+          exit 1
+        fi
 
-          status="success"
-          error_count=$(grep -c "ERROR\|FAIL" "$log_file" || echo "0")
-          error_location=$(grep -oP "at .*:\d+" "$log_file" || echo "無")
-          line=$(grep -oP "(?<=:)\d+" "$log_file" | tr '\n' ',' | sed 's/,$//' || echo "NULL")
-          log_content=$(tr -d "'\n\r" < "$log_file")
+        # 解析測試結果
+        test_name="${{ inputs.name }} Tests"
+        status="success"
+        error_count=$(grep -c -E "ERROR|FAIL" "$LOG_FILE" || echo "0")
+        error_location=$(grep -oP "at .*:\d+" "$LOG_FILE" || echo "無")
+        line=$(grep -oP "(?<=:)\d+" "$LOG_FILE" | tr '\n' ',' | sed 's/,$//' || echo "NULL")
+        log_content=$(tr -d "'\n\r" < "$LOG_FILE")
 
-          if grep -q "ERROR\|FAIL" "$log_file" || grep -q "FAILURES" "$log_file" || grep -q "Deprecation Notice" "$log_file"; then
-            status="failure"
-          fi
+        if grep -q -E "ERROR|FAIL|FAILURES|Deprecation Notice" "$LOG_FILE"; then
+          status="failure"
+        fi
 
-          echo "('$test_name', '$LOG_DIR', '$line', '$error_count', '$error_location', '$status', '$log_content')"
-        }
+        # 設置 GitHub Actions 輸出變數
+        echo "::set-output name=status::$status"
 
-        php_result=$(collect_results "PHP Unit Tests" "php_test_result.log")
-        js_result=$(collect_results "JavaScript Tests" "js_test_result.log")
-        snyk_result=$(collect_results "Snyk Security Tests" "snyk_test_result.log")
-
-        # Create table if not exists
+        # 建立 MySQL 表
         mysql -u ci_user -pci_password -D ci_test_reports -e "
         CREATE TABLE IF NOT EXISTS \`${TABLE_NAME}\` (
           id INT AUTO_INCREMENT PRIMARY KEY,
           test_name VARCHAR(255),
           test_location VARCHAR(255),
           line VARCHAR(255) DEFAULT NULL,
-          error_count VARCHAR(50),
+          error_count INT,
           error_location TEXT,
           status VARCHAR(50),
           log TEXT,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );"
 
-        # 批量插入測試結果
+        # 插入測試結果
         mysql -u ci_user -pci_password -D ci_test_reports -e "
         INSERT INTO \`${TABLE_NAME}\` (test_name, test_location, line, error_count, error_location, status, log)
-        VALUES $php_result, $js_result, $snyk_result;"
+        VALUES ('$test_name', '$LOG_DIR', '$line', '$error_count', '$error_location', '$status', '$log_content');"
         
       working-directory: /var/www/testForActions
       shell: /usr/bin/bash -e {0}
