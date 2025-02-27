@@ -118,7 +118,7 @@ jobs:
   deploy:
     runs-on: self-hosted
     needs: [php-tests, js-tests, snyk-security-tests]
-    if: ${{ env.PHP_TEST_STATUS == 'success' && env.JS_TEST_STATUS == 'success' && env.SNYK_TEST_STATUS == 'success' }}
+    if: ${{ needs.php-tests.outputs.testResult == 'success' && needs.js-tests.outputs.testResult == 'success' && needs.snyk-security-tests.outputs.testResult == 'success' }}
     steps:
     - name: Check out code
       uses: actions/checkout@v4
