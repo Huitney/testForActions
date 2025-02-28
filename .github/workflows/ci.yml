@@ -39,10 +39,14 @@ jobs:
     uses: Huitney/testForActions/.github/workflows/insertSQL.yml@master
     with:
       name: 'php'
+    needs: [php-tests]  # 確保 php-tests 先完成
+
+  store-php-status:
     runs-on: self-hosted
-        
-    - name: Store PHP Test Status
-      run: echo "PHP_TEST_STATUS=${{ needs.insert-SQL.outputs.testResult }}" >> $GITHUB_ENV
+    needs: [insert-sql-php]
+    steps:
+      - name: Store PHP Test Status
+        run: echo "PHP_TEST_STATUS=${{ needs.insert-sql-php.outputs.testResult }}" >> $GITHUB_ENV
       
   js-tests:
     runs-on: self-hosted
@@ -81,10 +85,14 @@ jobs:
     uses: Huitney/testForActions/.github/workflows/insertSQL.yml@master
     with:
       name: 'js'
+    needs: [js-tests]  # 確保 js-tests 先完成
+
+  store-js-status:
     runs-on: self-hosted
-        
-    - name: Store JS Test Status
-      run: echo "JS_TEST_STATUS=${{ needs.insert-SQL.outputs.testResult }}" >> $GITHUB_ENV
+    needs: [insert-sql-js]
+    steps:
+      - name: Store JS Test Status
+        run: echo "JS_TEST_STATUS=${{ needs.insert-sql-js.outputs.testResult }}" >> $GITHUB_ENV
       
   snyk-security-tests:
     runs-on: self-hosted
@@ -113,13 +121,16 @@ jobs:
     uses: Huitney/testForActions/.github/workflows/insertSQL.yml@master
     with:
       name: 'snyk'
+    needs: [snyk-tests]  # 確保 snyk-tests 先完成
+
+  store-snyk-status:
     runs-on: self-hosted
-        
-    - name: Store Snyk Test Status
-      run: echo "SNYK_TEST_STATUS=${{ needs.insert-SQL.outputs.testResult }}" >> $GITHUB_ENV
+    needs: [insert-sql-snyk]
+    steps:
+      - name: Store SNYK Test Status
+        run: echo "SNYK_TEST_STATUS=${{ needs.insert-sql-snyk.outputs.testResult }}" >> $GITHUB_ENV
 
   deploy:
-    runs-on: self-hosted
-    needs: [php-tests, js-tests, snyk-security-tests]
-    if: ${{ needs.php-tests.outputs.testResult == 'success' && needs.js-tests.outputs.testResult == 'success' && needs.snyk-security-tests.outputs.testResult == 'success' }}
+    needs: [insert-sql-php, insert-sql-js, insert-sql-snyk]
+    if: ${{ needs.insert-sql-php.outputs.testResult == 'success' && needs.insert-sql-js.outputs.testResult == 'success' && needs.insert-sql-snyk.outputs.testResult == 'success' }}
     uses: Huitney/testForActions/.github/workflows/cd.yml@master
