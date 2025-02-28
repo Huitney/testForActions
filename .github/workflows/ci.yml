@@ -35,10 +35,11 @@ jobs:
       working-directory: /var/www/html/test-website
       continue-on-error: true
       
-    - name: Insert test results into MySQL
-      uses: Huitney/testForActions/.github/workflows/insertSQL.yml@master
-      with:
-        name: 'php'
+  insert-sql-php:
+    uses: Huitney/testForActions/.github/workflows/insertSQL.yml@master
+    with:
+      name: 'php'
+    runs-on: self-hosted
         
     - name: Store PHP Test Status
       run: echo "PHP_TEST_STATUS=${{ needs.insert-SQL.outputs.testResult }}" >> $GITHUB_ENV
@@ -76,10 +77,11 @@ jobs:
       working-directory: /var/www/html/test-website
       continue-on-error: true
       
-    - name: Insert test results into MySQL
-      uses: Huitney/testForActions/.github/workflows/insertSQL.yml@master
-      with:
-        name: 'js'
+  insert-sql-js:
+    uses: Huitney/testForActions/.github/workflows/insertSQL.yml@master
+    with:
+      name: 'js'
+    runs-on: self-hosted
         
     - name: Store JS Test Status
       run: echo "JS_TEST_STATUS=${{ needs.insert-SQL.outputs.testResult }}" >> $GITHUB_ENV
@@ -107,10 +109,11 @@ jobs:
       working-directory: /var/www/html/test-website
       continue-on-error: true
       
-    - name: Insert test results into MySQL
-      uses: Huitney/testForActions/.github/workflows/insertSQL.yml@master
-      with:
-        name: 'snyk'
+  insert-sql-snyk:
+    uses: Huitney/testForActions/.github/workflows/insertSQL.yml@master
+    with:
+      name: 'snyk'
+    runs-on: self-hosted
         
     - name: Store Snyk Test Status
       run: echo "SNYK_TEST_STATUS=${{ needs.insert-SQL.outputs.testResult }}" >> $GITHUB_ENV
@@ -119,9 +122,4 @@ jobs:
     runs-on: self-hosted
     needs: [php-tests, js-tests, snyk-security-tests]
     if: ${{ needs.php-tests.outputs.testResult == 'success' && needs.js-tests.outputs.testResult == 'success' && needs.snyk-security-tests.outputs.testResult == 'success' }}
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v4
-
-    - name: Run Continuous Deployment
-      uses: Huitney/testForActions/.github/workflows/cd.yml@master
+    uses: Huitney/testForActions/.github/workflows/cd.yml@master
