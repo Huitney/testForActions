@@ -121,7 +121,7 @@ jobs:
     uses: Huitney/testForActions/.github/workflows/insertSQL.yml@master
     with:
       name: 'snyk'
-    needs: [snyk-tests]  # 確保 snyk-tests 先完成
+    needs: [snyk-security-tests]  # 確保 snyk-tests 先完成
 
   store-snyk-status:
     runs-on: self-hosted
