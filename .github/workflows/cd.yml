@@ -14,6 +14,10 @@ jobs:
       - name: Check if all test workflows are completed
         id: check
         run: |
+        
+          echo "Checking test workflows status..."
+
+        
           # GitHub API 取得所有 workflow 的狀態
           latest_php=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/runs?workflow_name=PHP%20Tests&branch=master&status=completed" | jq -r '.workflow_runs[0].status')
@@ -23,6 +27,10 @@ jobs:
 
           latest_snyk=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/runs?workflow_name=Snyk%20Security%20Tests&branch=master&status=completed" | jq -r '.workflow_runs[0].status')
+
+          echo "PHP Test Status: $latest_php"
+          echo "JS Test Status: $latest_js"
+          echo "Snyk Test Status: $latest_snyk"
 
           # 檢查是否全部完成
           if [[ "$latest_php" == "completed" && "$latest_js" == "completed" && "$latest_snyk" == "completed" ]]; then
