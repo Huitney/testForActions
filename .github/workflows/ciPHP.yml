@@ -1,0 +1,42 @@
+name: PHP Tests
+
+on:
+  workflow_run:
+    workflows: ["deployment test server"]
+    types: completed
+
+jobs:
+  php-tests:
+    runs-on: self-hosted
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+      
+    - name: Fix permissions for test directory
+      run: |
+        sudo chown -R $USER:$USER /var/www/html/test-website
+        sudo chmod -R 755 /var/www/html/test-website
+
+    - name: Install PHP dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y zip unzip
+        curl -sS https://getcomposer.org/installer | php
+        php composer.phar install
+      working-directory: /var/www/html/test-website
+
+    - name: Run PHP Unit Tests and collect logs
+      run: |
+        php_start=$(date +%s.%N)
+        ./vendor/bin/phpunit tests/exampleTest.php > /var/www/testForActions/php_test_result.log 2>&1 || touch /var/www/testForActions/php_test_result.log
+        php_end=$(date +%s.%N)
+        php_duration=$(echo "$php_end - $php_start" | bc)
+        echo "php Time: ${php_duration}s"
+      working-directory: /var/www/html/test-website
+      continue-on-error: true
+
+  insert-sql-php:
+    uses: Huitney/testForActions/.github/workflows/insertSQL.yml@master
+    with:
+      name: 'php'
+    needs: php-tests

@@ -1,32 +1,34 @@
-name: CD Pipeline
+name: Deployment
 
 on:
-  workflow_call:
-    
+  workflow_run:
+    workflows: ["PHP Tests", "JavaScript Tests", "Snyk Security Tests"]
+    types: completed
+
 jobs:
-  deployment:
+  deploy:
     runs-on: self-hosted
+    needs: [insert-sql-php, insert-sql-js, insert-sql-snyk]
+    if: ${{ needs.insert-sql-php.outputs.testResult == 'failure' && needs.insert-sql-js.outputs.testResult == 'failure' && needs.insert-sql-snyk.outputs.testResult == 'failure' }}
     steps:
-    - name: Check out code
-      uses: actions/checkout@v4
+      - name: Check out code
+        uses: actions/checkout@v4
       
-    - name: Fix Git permissions
-      run: sudo chown -R $(whoami) /var/www/testForActions/.git
-      working-directory: /var/www/testForActions
+      - name: Fix Git permissions
+        run: sudo chown -R $(whoami) /var/www/testForActions/.git
+        working-directory: /var/www/testForActions
       
-    - name: pull the code
-      run: |
-        git stash
-        git pull origin master
-        
-      working-directory: /var/www/testForActions
+      - name: Pull the latest code
+        run: |
+          git stash
+          git pull origin master
+        working-directory: /var/www/testForActions
       
-    - name: Fix permissions for /var/www/html
-      run: sudo chown -R $(whoami) /var/www/html
+      - name: Fix permissions for /var/www/html
+        run: sudo chown -R $(whoami) /var/www/html
     
-    - name: move the code
-      run: |
-        rm -r ./test-website
-        mv /var/www/testForActions/test-website ./test-website
-        
-      working-directory: /var/www/html
+      - name: Move the code
+        run: |
+          rm -r ./test-website
+          mv /var/www/testForActions/test-website ./test-website
+        working-directory: /var/www/html
