@@ -51,9 +51,9 @@ jobs:
       - name: Get Test Results from MySQL
         id: check
         run: |
-          php_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='php' ORDER BY created_at DESC LIMIT 1;")
-          js_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='js' ORDER BY created_at DESC LIMIT 1;")
-          snyk_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='snyk' ORDER BY created_at DESC LIMIT 1;")
+          php_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='php Tests' ORDER BY created_at DESC LIMIT 1;")
+          js_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='js Tests' ORDER BY created_at DESC LIMIT 1;")
+          snyk_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='snyk Tests' ORDER BY created_at DESC LIMIT 1;")
 
           # 確保變數不為空
           php_status=${php_status:-"unknown"}
