@@ -47,13 +47,18 @@ jobs:
       - name: Get Test Results from MySQL
         id: check
         run: |
-          php_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_${{ github.actor }} WHERE test_name='php' ORDER BY created_at DESC LIMIT 1;")
-          js_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_${{ github.actor }} WHERE test_name='js' ORDER BY created_at DESC LIMIT 1;")
-          snyk_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_${{ github.actor }} WHERE test_name='snyk' ORDER BY created_at DESC LIMIT 1;")
+          php_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='php' ORDER BY created_at DESC LIMIT 1;")
+          js_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='js' ORDER BY created_at DESC LIMIT 1;")
+          snyk_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='snyk' ORDER BY created_at DESC LIMIT 1;")
 
-          echo "php_status=${php_status}" >> "$GITHUB_ENV"
-          echo "js_status=${js_status}" >> "$GITHUB_ENV"
-          echo "snyk_status=${snyk_status}" >> "$GITHUB_ENV"
+          # 確保變數不為空
+          php_status=${php_status:-"unknown"}
+          js_status=${js_status:-"unknown"}
+          snyk_status=${snyk_status:-"unknown"}
+
+          echo "php_status=$php_status" >> $GITHUB_OUTPUT
+          echo "js_status=$js_status" >> $GITHUB_OUTPUT
+          echo "snyk_status=$snyk_status" >> $GITHUB_OUTPUT
       - name: Debug test statuses
         run: |
           echo "PHP Status: ${{ steps.check.outputs.php_status }}"
