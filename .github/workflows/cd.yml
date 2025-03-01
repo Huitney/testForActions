@@ -44,6 +44,10 @@ jobs:
     needs: wait-for-all-tests
     if: ${{ needs.wait-for-all-tests.outputs.all_completed == 'true' }}
     steps:
+      - name: Debug MySQL Query
+        run: |
+          echo "Checking MySQL query results..."
+          mysql -u ci_user -pci_password -D ci_test_reports -e "SELECT test_name, status FROM test_results_Huitney ORDER BY created_at DESC;"
       - name: Get Test Results from MySQL
         id: check
         run: |
