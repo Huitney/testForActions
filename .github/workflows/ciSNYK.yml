@@ -2,7 +2,7 @@ name: Snyk Security Tests
 
 on:
   workflow_run:
-    workflows: ["deployment test server"]
+    workflows: ["JavaScript Tests"]
     types: completed
 
 jobs:

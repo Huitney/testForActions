@@ -2,7 +2,7 @@ name: JavaScript Tests
 
 on:
   workflow_run:
-    workflows: ["deployment test server"]
+    workflows: ["PHP Tests"]
     types: completed
 
 jobs:
