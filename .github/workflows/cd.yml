@@ -2,7 +2,7 @@ name: Deployment
 
 on:
   workflow_run:
-    workflows: ["Snyk Security Tests"]
+    workflows: ["JavaScript Tests", "Snyk Security Tests"]
     types: completed
 
 jobs:
