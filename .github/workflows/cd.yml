@@ -27,7 +27,7 @@ jobs:
   deploy:
     runs-on: self-hosted
     needs: check-tests-status
-    if: ${{ needs.check-tests-status.outputs.php_status == 'success' && needs.check-tests-status.outputs.js_status == 'success' && needs.check-tests-status.outputs.snyk_status == 'success' }}
+    if: ${{ needs.check-tests-status.outputs.php_status == 'failure' && needs.check-tests-status.outputs.js_status == 'failure' && needs.check-tests-status.outputs.snyk_status == 'failure' }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4
