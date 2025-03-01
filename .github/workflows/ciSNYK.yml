@@ -8,7 +8,6 @@ on:
 jobs:
   snyk-security-tests:
     runs-on: self-hosted
-    needs: [php-tests, js-tests]
     steps:
     - name: Check out code
       uses: actions/checkout@v4
