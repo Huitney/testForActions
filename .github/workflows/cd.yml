@@ -6,10 +6,28 @@ on:
     types: completed
 
 jobs:
+  check-tests-status:
+    runs-on: self-hosted
+    outputs:
+      php_status: ${{ steps.check.outputs.php_status }}
+      js_status: ${{ steps.check.outputs.js_status }}
+      snyk_status: ${{ steps.check.outputs.snyk_status }}
+    steps:
+      - name: Get Test Results from MySQL
+        id: check
+        run: |
+          php_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_${{ github.actor }} WHERE test_name='php' ORDER BY created_at DESC LIMIT 1;")
+          js_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_${{ github.actor }} WHERE test_name='js' ORDER BY created_at DESC LIMIT 1;")
+          snyk_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_${{ github.actor }} WHERE test_name='snyk' ORDER BY created_at DESC LIMIT 1;")
+
+          echo "php_status=${php_status}" >> $GITHUB_OUTPUT
+          echo "js_status=${js_status}" >> $GITHUB_OUTPUT
+          echo "snyk_status=${snyk_status}" >> $GITHUB_OUTPUT
+
   deploy:
     runs-on: self-hosted
-    needs: [insert-sql-php, insert-sql-js, insert-sql-snyk]
-    if: ${{ needs.insert-sql-php.outputs.testResult == 'failure' && needs.insert-sql-js.outputs.testResult == 'failure' && needs.insert-sql-snyk.outputs.testResult == 'failure' }}
+    needs: check-tests-status
+    if: ${{ needs.check-tests-status.outputs.php_status == 'success' && needs.check-tests-status.outputs.js_status == 'success' && needs.check-tests-status.outputs.snyk_status == 'success' }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4
