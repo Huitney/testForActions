@@ -43,10 +43,6 @@ jobs:
     runs-on: self-hosted
     needs: wait-for-all-tests
     if: ${{ needs.wait-for-all-tests.outputs.all_completed == 'true' }}
-    outputs:
-      php_status: ${{ steps.check.outputs.php_status }}
-      js_status: ${{ steps.check.outputs.js_status }}
-      snyk_status: ${{ steps.check.outputs.snyk_status }}
     steps:
       - name: Get Test Results from MySQL
         id: check
@@ -55,14 +51,22 @@ jobs:
           js_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_${{ github.actor }} WHERE test_name='js' ORDER BY created_at DESC LIMIT 1;")
           snyk_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_${{ github.actor }} WHERE test_name='snyk' ORDER BY created_at DESC LIMIT 1;")
 
-          echo "php_status=${php_status}" >> $GITHUB_OUTPUT
-          echo "js_status=${js_status}" >> $GITHUB_OUTPUT
-          echo "snyk_status=${snyk_status}" >> $GITHUB_OUTPUT
+          echo "php_status=${php_status}" >> "$GITHUB_ENV"
+          echo "js_status=${js_status}" >> "$GITHUB_ENV"
+          echo "snyk_status=${snyk_status}" >> "$GITHUB_ENV"
+      - name: Debug test statuses
+        run: |
+          echo "PHP Status: ${{ steps.check.outputs.php_status }}"
+          echo "JS Status: ${{ steps.check.outputs.js_status }}"
+          echo "Snyk Status: ${{ steps.check.outputs.snyk_status }}"
 
   deploy:
     runs-on: self-hosted
     needs: check-tests-status
-    if: ${{ needs.check-tests-status.outputs.php_status == 'failure' && needs.check-tests-status.outputs.js_status == 'failure' && needs.check-tests-status.outputs.snyk_status == 'failure' }}
+    if: |
+      needs.check-tests-status.outputs.php_status == 'failure' &&
+      needs.check-tests-status.outputs.js_status == 'failure' &&
+      needs.check-tests-status.outputs.snyk_status == 'failure'    
     steps:
       - name: Check out code
         uses: actions/checkout@v4
