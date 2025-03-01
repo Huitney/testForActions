@@ -6,8 +6,30 @@ on:
     types: completed
 
 jobs:
+  wait-for-all-tests:
+    runs-on: self-hosted
+    outputs:
+      all_completed: ${{ steps.check.outputs.all_completed }}
+    steps:
+      - name: Check if all test workflows are completed
+        id: check
+        run: |
+          latest_php=$(gh run list --workflow "PHP Tests" --branch master --json status --jq '.[0].status')
+          latest_js=$(gh run list --workflow "JavaScript Tests" --branch master --json status --jq '.[0].status')
+          latest_snyk=$(gh run list --workflow "Snyk Security Tests" --branch master --json status --jq '.[0].status')
+
+          if [[ "$latest_php" == "completed" && "$latest_js" == "completed" && "$latest_snyk" == "completed" ]]; then
+            echo "all_completed=true" >> $GITHUB_OUTPUT
+          else
+            echo "all_completed=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   check-tests-status:
     runs-on: self-hosted
+    needs: wait-for-all-tests
+    if: ${{ needs.wait-for-all-tests.outputs.all_completed == 'true' }}
     outputs:
       php_status: ${{ steps.check.outputs.php_status }}
       js_status: ${{ steps.check.outputs.js_status }}
