@@ -60,9 +60,9 @@ jobs:
           js_status=${js_status:-"unknown"}
           snyk_status=${snyk_status:-"unknown"}
 
-          echo "php_status=$php_status" >> "$GITHUB_ENV"
-          echo "js_status=$js_status" >> "$GITHUB_ENV"
-          echo "snyk_status=$snyk_status" >> "$GITHUB_ENV"
+          echo "php_status=$php_status" >> "$GITHUB_OUTPUT"
+          echo "js_status=$js_status" >> "$GITHUB_OUTPUT"
+          echo "snyk_status=$snyk_status" >> "$GITHUB_OUTPUT"
 
       - name: Debug test statuses
         run: |
