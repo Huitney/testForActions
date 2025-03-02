@@ -69,6 +69,16 @@ jobs:
           echo "JS Status: ${{ steps.check.outputs.js_status }}"
           echo "Snyk Status: ${{ steps.check.outputs.snyk_status }}"
 
+  checkStatus:
+    runs-on: self-hosted
+    needs: check-tests-status
+    steps:
+      - name: Debug test statuses
+        run: |
+          echo "PHP Test Status: ${{ needs.check-tests-status.outputs.php_status }}"
+          echo "JS Test Status: ${{ needs.check-tests-status.outputs.js_status }}"
+          echo "Snyk Test Status: ${{ needs.check-tests-status.outputs.snyk_status }}"
+  
   deploy:
     runs-on: self-hosted
     needs: check-tests-status
