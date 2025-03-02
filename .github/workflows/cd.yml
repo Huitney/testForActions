@@ -43,13 +43,18 @@ jobs:
     runs-on: self-hosted
     needs: wait-for-all-tests
     if: ${{ needs.wait-for-all-tests.outputs.all_completed == 'true' }}
+    outputs:
+      php_status: ${{ steps.store.outputs.php_status }}
+      js_status: ${{ steps.store.outputs.js_status }}
+      snyk_status: ${{ steps.store.outputs.snyk_status }}
     steps:
       - name: Debug MySQL Query
         run: |
           echo "Checking MySQL query results..."
           mysql -u ci_user -pci_password -D ci_test_reports -e "SELECT test_name, status FROM test_results_Huitney ORDER BY created_at DESC;"
+
       - name: Get Test Results from MySQL
-        id: check
+        id: store  # 這裡要加上 ID
         run: |
           php_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='php Tests' ORDER BY created_at DESC LIMIT 1;")
           js_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='js Tests' ORDER BY created_at DESC LIMIT 1;")
@@ -66,9 +71,9 @@ jobs:
 
       - name: Debug test statuses
         run: |
-          echo "PHP Status: ${{ steps.check.outputs.php_status }}"
-          echo "JS Status: ${{ steps.check.outputs.js_status }}"
-          echo "Snyk Status: ${{ steps.check.outputs.snyk_status }}"
+          echo "PHP Status: ${{ steps.store.outputs.php_status }}"
+          echo "JS Status: ${{ steps.store.outputs.js_status }}"
+          echo "Snyk Status: ${{ steps.store.outputs.snyk_status }}"
 
   checkStatus:
     runs-on: self-hosted
@@ -84,9 +89,9 @@ jobs:
     runs-on: self-hosted
     needs: check-tests-status
     if: |
-      contains(needs.check-tests-status.outputs.php_status, 'failure') &&
-      contains(needs.check-tests-status.outputs.js_status, 'failure') &&
-      contains(needs.check-tests-status.outputs.snyk_status, 'failure')   
+      needs.check-tests-status.outputs.php_status == 'failure' &&
+      needs.check-tests-status.outputs.js_status == 'failure' &&
+      needs.check-tests-status.outputs.snyk_status == 'failure'
     steps:
       - name: Debug test statuses before deployment
         run: |
