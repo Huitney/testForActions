@@ -49,16 +49,22 @@ jobs:
       snyk_status: ${{ steps.store.outputs.snyk_status }}
     steps:
       - name: Debug MySQL Query
+        env:
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
         run: |
           echo "Checking MySQL query results..."
-          mysql -u ci_user -pci_password -D ci_test_reports -e "SELECT test_name, status FROM test_results_Huitney ORDER BY created_at DESC;"
+          mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -D ci_test_reports -e "SELECT test_name, status FROM test_results_Huitney ORDER BY created_at DESC;"
 
       - name: Get Test Results from MySQL
         id: store  # 這裡要加上 ID
+        env:
+          MYSQL_USER: ${{ secrets.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
         run: |
-          php_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='php Tests' ORDER BY created_at DESC LIMIT 1;")
-          js_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='js Tests' ORDER BY created_at DESC LIMIT 1;")
-          snyk_status=$(mysql -u ci_user -pci_password -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='snyk Tests' ORDER BY created_at DESC LIMIT 1;")
+          php_status=$(mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='php Tests' ORDER BY created_at DESC LIMIT 1;")
+          js_status=$(mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='js Tests' ORDER BY created_at DESC LIMIT 1;")
+          snyk_status=$(mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='snyk Tests' ORDER BY created_at DESC LIMIT 1;")
 
           # 確保變數不為空
           php_status=${php_status:-"unknown"}
