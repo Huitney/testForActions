@@ -23,23 +23,24 @@ jobs:
       uses: actions/checkout@v4
       
     - name: Manually Set MySQL Credentials
-      with:
+      env:
         MYSQL_USER: ${{ secrets.MYSQL_USER }}
         MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
       run: |
         echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> $GITHUB_ENV
         echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
+        
     - name: Debug MySQL Credentials
       run: |
         echo "MYSQL_USER=${MYSQL_USER}"
         echo "MYSQL_PASSWORD length=${#MYSQL_PASSWORD}" # 只顯示長度，避免密碼洩露
-      with:
+      env:
         MYSQL_USER: ${{ secrets.MYSQL_USER }}
         MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
       
     - name: Collect and insert test results into MySQL
       id: collectResult
-      with:
+      env:
         MYSQL_USER: ${{ secrets.MYSQL_USER }}
         MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
       run: |
