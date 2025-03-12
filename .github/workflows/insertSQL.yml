@@ -22,6 +22,14 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4
       
+    - name: Debug MySQL Credentials
+      run: |
+        echo "MYSQL_USER=${MYSQL_USER}"
+        echo "MYSQL_PASSWORD=${#MYSQL_PASSWORD}"  # 顯示密碼長度
+      env:
+        MYSQL_USER: ${{ secrets.MYSQL_USER }}
+        MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      
     - name: Collect and insert test results into MySQL
       id: collectResult
       env:
