@@ -22,6 +22,10 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v4
       
+    - name: Manually Set MySQL Credentials
+      run: |
+        echo "MYSQL_USER=ci_user" >> $GITHUB_ENV
+        echo "MYSQL_PASSWORD=your_password_here" >> $GITHUB_ENV
     - name: Debug MySQL Credentials
       run: |
         echo "MYSQL_USER=${MYSQL_USER}"
