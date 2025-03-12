@@ -1,9 +1,7 @@
 name: Snyk Security Tests
 
 on:
-  workflow_run:
-    workflows: ["JavaScript Tests"]
-    types: completed
+
 
 jobs:
   snyk-security-tests:
