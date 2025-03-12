@@ -53,6 +53,10 @@ jobs:
 
         # 設置 GitHub Actions 輸出變數
         echo "::set-output name=status::$status"
+        
+        # 嘗試手動測試 MySQL 登入
+        echo "Testing MySQL Connection..."
+        mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -D ci_test_reports -e "SHOW TABLES;"
 
         # 建立 MySQL 表
         mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -D ci_test_reports -e "
