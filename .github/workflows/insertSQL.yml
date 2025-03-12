@@ -24,12 +24,12 @@ jobs:
       
     - name: Manually Set MySQL Credentials
       run: |
-        echo "MYSQL_USER=ci_user" >> $GITHUB_ENV
-        echo "MYSQL_PASSWORD=your_password_here" >> $GITHUB_ENV
+        echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> $GITHUB_ENV
+        echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
     - name: Debug MySQL Credentials
       run: |
         echo "MYSQL_USER=${MYSQL_USER}"
-        echo "MYSQL_PASSWORD=${#MYSQL_PASSWORD}"  # 顯示密碼長度
+        echo "MYSQL_PASSWORD length=${#MYSQL_PASSWORD}" # 只顯示長度，避免密碼洩露
       env:
         MYSQL_USER: ${{ secrets.MYSQL_USER }}
         MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
