@@ -54,9 +54,12 @@ jobs:
         # 設置 GitHub Actions 輸出變數
         echo "::set-output name=status::$status"
         
+        echo "MYSQL_USER=$MYSQL_USER"
+        echo "MYSQL_PASSWORD=${#MYSQL_PASSWORD}"  # 顯示密碼長度，但不顯示密碼內容
+        
         # 嘗試手動測試 MySQL 登入
         echo "Testing MySQL Connection..."
-        mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -D ci_test_reports -e "SHOW TABLES;"
+        mysql -u "$MYSQL_USER" --password="$MYSQL_PASSWORD" -D ci_test_reports -e "SHOW TABLES;"
 
         # 建立 MySQL 表
         mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -D ci_test_reports -e "
