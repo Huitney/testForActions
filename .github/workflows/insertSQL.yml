@@ -23,7 +23,7 @@ jobs:
       uses: actions/checkout@v4
       
     - name: Manually Set MySQL Credentials
-      env:
+      with:
         MYSQL_USER: ${{ secrets.MYSQL_USER }}
         MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
       run: |
@@ -33,13 +33,13 @@ jobs:
       run: |
         echo "MYSQL_USER=${MYSQL_USER}"
         echo "MYSQL_PASSWORD length=${#MYSQL_PASSWORD}" # 只顯示長度，避免密碼洩露
-      env:
+      with:
         MYSQL_USER: ${{ secrets.MYSQL_USER }}
         MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
       
     - name: Collect and insert test results into MySQL
       id: collectResult
-      env:
+      with:
         MYSQL_USER: ${{ secrets.MYSQL_USER }}
         MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
       run: |
