@@ -27,7 +27,7 @@ jobs:
         echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> $GITHUB_ENV
         echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
         echo "Secrets manually set!"
-      env:
+      with:
         MYSQL_USER: ${{ secrets.MYSQL_USER }}
         MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
         
