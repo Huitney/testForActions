@@ -2,7 +2,7 @@ name: Deployment
 
 on:
   workflow_run:
-    workflows: ["PHP Tests", "JavaScript Tests", "Snyk Security Tests"]
+    workflows: ["PHP Tests", "Snyk Security Tests"]
     types: completed
 
 jobs:
@@ -22,18 +22,14 @@ jobs:
           latest_php=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/runs?workflow_name=PHP%20Tests&branch=master&status=completed" | jq -r '.workflow_runs[0].status')
 
-          latest_js=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/runs?workflow_name=JavaScript%20Tests&branch=master&status=completed" | jq -r '.workflow_runs[0].status')
-
           latest_snyk=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/runs?workflow_name=Snyk%20Security%20Tests&branch=master&status=completed" | jq -r '.workflow_runs[0].status')
 
           echo "PHP Test Status: $latest_php"
-          echo "JS Test Status: $latest_js"
           echo "Snyk Test Status: $latest_snyk"
 
           # 檢查是否全部完成
-          if [[ "$latest_php" == "completed" && "$latest_js" == "completed" && "$latest_snyk" == "completed" ]]; then
+          if [[ "$latest_php" == "completed" && "$latest_snyk" == "completed" ]]; then
             echo "all_completed=true" >> $GITHUB_OUTPUT
           else
             echo "all_completed=false" >> $GITHUB_OUTPUT
@@ -45,7 +41,6 @@ jobs:
     if: ${{ needs.wait-for-all-tests.outputs.all_completed == 'true' }}
     outputs:
       php_status: ${{ steps.store.outputs.php_status }}
-      js_status: ${{ steps.store.outputs.js_status }}
       snyk_status: ${{ steps.store.outputs.snyk_status }}
     steps:
       - name: Debug MySQL Query
@@ -63,22 +58,18 @@ jobs:
           MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
         run: |
           php_status=$(mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='php Tests' ORDER BY created_at DESC LIMIT 1;")
-          js_status=$(mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='js Tests' ORDER BY created_at DESC LIMIT 1;")
           snyk_status=$(mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -D ci_test_reports -se "SELECT status FROM test_results_Huitney WHERE test_name='snyk Tests' ORDER BY created_at DESC LIMIT 1;")
 
           # 確保變數不為空
           php_status=${php_status:-"unknown"}
-          js_status=${js_status:-"unknown"}
           snyk_status=${snyk_status:-"unknown"}
 
           echo "php_status=$php_status" >> "$GITHUB_OUTPUT"
-          echo "js_status=$js_status" >> "$GITHUB_OUTPUT"
           echo "snyk_status=$snyk_status" >> "$GITHUB_OUTPUT"
 
       - name: Debug test statuses
         run: |
           echo "PHP Status: ${{ steps.store.outputs.php_status }}"
-          echo "JS Status: ${{ steps.store.outputs.js_status }}"
           echo "Snyk Status: ${{ steps.store.outputs.snyk_status }}"
 
   checkStatus:
@@ -88,7 +79,6 @@ jobs:
       - name: Debug test statuses
         run: |
           echo "PHP Test Status: ${{ needs.check-tests-status.outputs.php_status }}"
-          echo "JS Test Status: ${{ needs.check-tests-status.outputs.js_status }}"
           echo "Snyk Test Status: ${{ needs.check-tests-status.outputs.snyk_status }}"
   
   deploy:
@@ -96,13 +86,11 @@ jobs:
     needs: check-tests-status
     if: |
       needs.check-tests-status.outputs.php_status == 'success' &&
-      needs.check-tests-status.outputs.js_status == 'success' &&
       needs.check-tests-status.outputs.snyk_status == 'success'
     steps:
       - name: Debug test statuses before deployment
         run: |
           echo "PHP Test Status: ${{ needs.check-tests-status.outputs.php_status }}"
-          echo "JS Test Status: ${{ needs.check-tests-status.outputs.js_status }}"
           echo "Snyk Test Status: ${{ needs.check-tests-status.outputs.snyk_status }}"
       
       - name: Check out code

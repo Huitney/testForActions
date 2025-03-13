@@ -29,6 +29,7 @@ jobs:
         
     - name: Debug MySQL Credentials
       run: |
+        set | grep MYSQL
         echo "MYSQL_USER=${MYSQL_USER}"
         echo "MYSQL_PASSWORD length=${#MYSQL_PASSWORD}" # 只顯示長度，避免密碼洩露
       
@@ -64,15 +65,15 @@ jobs:
         # 設置 GitHub Actions 輸出變數
         echo "status=$status" >> "$GITHUB_ENV"
 
-        echo "MYSQL_USER=$MYSQL_USER"
+        echo "MYSQL_USER=${{ secrets.MYSQL_USER }}"
         echo "MYSQL_PASSWORD length=${#MYSQL_PASSWORD}"  # 顯示密碼長度，但不顯示密碼內容
         
         # 嘗試手動測試 MySQL 登入
         echo "Testing MySQL Connection..."
-        mysql -u "$MYSQL_USER" --password="$MYSQL_PASSWORD" -D ci_test_reports -e "SHOW TABLES;"
+        mysql -u "${{ secrets.MYSQL_USER }}" --password="${{ secrets.MYSQL_PASSWORD }}" -D ci_test_reports -e "SHOW TABLES;"
 
         # 建立 MySQL 表
-        mysql -u "$MYSQL_USER" --password="$MYSQL_PASSWORD" -D ci_test_reports -e "
+        mysql -u "${{ secrets.MYSQL_USER }}" --password="${{ secrets.MYSQL_PASSWORD }}" -D ci_test_reports -e "
         CREATE TABLE IF NOT EXISTS \`${TABLE_NAME}\` (
           id INT AUTO_INCREMENT PRIMARY KEY,
           test_name VARCHAR(255),
@@ -86,7 +87,7 @@ jobs:
         );"
 
         # 插入測試結果
-        mysql -u "$MYSQL_USER" --password="$MYSQL_PASSWORD" -D ci_test_reports -e "
+        mysql -u "${{ secrets.MYSQL_USER }}" --password="${{ secrets.MYSQL_PASSWORD }}" -D ci_test_reports -e "
         INSERT INTO \`${TABLE_NAME}\` (test_name, test_location, line, error_count, error_location, status, log)
         VALUES ('$test_name', '$LOG_DIR', '$line', '$error_count', '$error_location', '$status', '$log_content');"
         
