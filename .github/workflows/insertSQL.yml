@@ -16,6 +16,9 @@ on:
 jobs:
   insert-SQL:
     runs-on: self-hosted
+    env:
+      MYSQL_USER: ${{ secrets.MYSQL_USER }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
     outputs:
       testResult: ${{ steps.collectResult.outputs.status }}
     steps:
@@ -27,9 +30,7 @@ jobs:
         echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> $GITHUB_ENV
         echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
         echo "Secrets manually set!"
-      with:
-        MYSQL_USER: ${{ secrets.MYSQL_USER }}
-        MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      
         
     - name: Debug MySQL Credentials
       run: |
@@ -39,9 +40,6 @@ jobs:
       
     - name: Collect and insert test results into MySQL
       id: collectResult
-      env:
-        MYSQL_USER: ${{ secrets.MYSQL_USER }}
-        MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
       run: |
         LOG_DIR="/var/www/testForActions"
         LOG_FILE="${LOG_DIR}/${{ inputs.name }}_test_result.log"
