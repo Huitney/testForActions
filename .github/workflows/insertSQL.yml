@@ -26,6 +26,10 @@ jobs:
       run: |
         echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> $GITHUB_ENV
         echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
+        echo "Secrets manually set!"
+      env:
+        MYSQL_USER: ${{ secrets.MYSQL_USER }}
+        MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
         
     - name: Debug MySQL Credentials
       run: |
@@ -65,15 +69,15 @@ jobs:
         # 設置 GitHub Actions 輸出變數
         echo "status=$status" >> "$GITHUB_ENV"
 
-        echo "MYSQL_USER=${{ secrets.MYSQL_USER }}"
+        echo "MYSQL_USER=$MYSQL_USER"
         echo "MYSQL_PASSWORD length=${#MYSQL_PASSWORD}"  # 顯示密碼長度，但不顯示密碼內容
         
         # 嘗試手動測試 MySQL 登入
         echo "Testing MySQL Connection..."
-        mysql -u "${{ secrets.MYSQL_USER }}" --password="${{ secrets.MYSQL_PASSWORD }}" -D ci_test_reports -e "SHOW TABLES;"
+        mysql -u "$MYSQL_USER" --password="$MYSQL_PASSWORD" -D ci_test_reports -e "SHOW TABLES;"
 
         # 建立 MySQL 表
-        mysql -u "${{ secrets.MYSQL_USER }}" --password="${{ secrets.MYSQL_PASSWORD }}" -D ci_test_reports -e "
+        mysql -u "$MYSQL_USER" --password="$MYSQL_PASSWORD" -D ci_test_reports -e "
         CREATE TABLE IF NOT EXISTS \`${TABLE_NAME}\` (
           id INT AUTO_INCREMENT PRIMARY KEY,
           test_name VARCHAR(255),
