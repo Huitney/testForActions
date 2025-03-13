@@ -12,75 +12,83 @@ on:
       testResult: 
         description: 'Test result'
         value: ${{ jobs.insert-SQL.outputs.testResult }}
-        
+    
 jobs:
   insert-SQL:
     runs-on: self-hosted
     outputs:
       testResult: ${{ steps.collectResult.outputs.status }}
     steps:
-      - name: Check out code
-        uses: actions/checkout@v4
+    - name: Check out code
+      uses: actions/checkout@v4
       
-      - name: Debug MySQL Credentials
-        run: |
-          echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> $GITHUB_ENV
-          echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
+    - name: Manually Set MySQL Credentials
+      run: |
+        echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> $GITHUB_ENV
+        echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
+        
+    - name: Debug MySQL Credentials
+      run: |
+        echo "MYSQL_USER=${MYSQL_USER}"
+        echo "MYSQL_PASSWORD length=${#MYSQL_PASSWORD}" # 只顯示長度，避免密碼洩露
+      
+    - name: Collect and insert test results into MySQL
+      id: collectResult
+      env:
+        MYSQL_USER: ${{ secrets.MYSQL_USER }}
+        MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+      run: |
+        LOG_DIR="/var/www/testForActions"
+        LOG_FILE="${LOG_DIR}/${{ inputs.name }}_test_result.log"
+        GITHUB_USER="${{ github.actor }}"
+        TABLE_NAME="test_results_${GITHUB_USER}"
 
-      - name: Verify Environment Variables
-        run: |
-          echo "MYSQL_USER=${MYSQL_USER}"
-          echo "MYSQL_PASSWORD length=${#MYSQL_PASSWORD}" # 只顯示長度，避免密碼洩漏
+        if [ ! -f "$LOG_FILE" ]; then
+          echo "Error: $LOG_FILE is missing."
+          echo "status=error" >> "$GITHUB_ENV"
+          exit 1
+        fi
 
-      - name: Collect and insert test results into MySQL
-        id: collectResult
-        env:
-          MYSQL_USER: ${{ secrets.MYSQL_USER }}
-          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-        run: |
-          LOG_DIR="/var/www/testForActions"
-          LOG_FILE="${LOG_DIR}/${{ inputs.name }}_test_result.log"
-          GITHUB_USER="${{ github.actor }}"
-          TABLE_NAME="test_results_${GITHUB_USER}"
+        # 解析測試結果
+        test_name="${{ inputs.name }} Tests"
+        status="success"
+        error_count=$(grep -c -E "ERROR|FAIL" "$LOG_FILE" || echo "0")
+        error_location=$(grep -oP "at .*:\d+" "$LOG_FILE" || echo "無")
+        line=$(grep -oP "(?<=:)\d+" "$LOG_FILE" | tr '\n' ',' | sed 's/,$//' || echo "NULL")
+        log_content=$(tr -d "'\n\r" < "$LOG_FILE")
 
-          if [ ! -f "$LOG_FILE" ]; then
-            echo "Error: $LOG_FILE is missing."
-            echo "status=error" >> $GITHUB_ENV
-            exit 1
-          fi
+        if grep -q -E "ERROR|FAIL|FAILURES|Deprecation Notice" "$LOG_FILE"; then
+          status="failure"
+        fi
 
-          test_name="${{ inputs.name }} Tests"
-          status="success"
-          error_count=$(grep -c -E "ERROR|FAIL" "$LOG_FILE" || echo "0")
-          error_location=$(grep -oP "at .*:\d+" "$LOG_FILE" || echo "無")
-          line=$(grep -oP "(?<=:)\d+" "$LOG_FILE" | tr '\n' ',' | sed 's/,$//' || echo "NULL")
-          log_content=$(tr -d "'\n\r" < "$LOG_FILE")
+        # 設置 GitHub Actions 輸出變數
+        echo "status=$status" >> "$GITHUB_ENV"
 
-          if grep -q -E "ERROR|FAIL|FAILURES|Deprecation Notice" "$LOG_FILE"; then
-            status="failure"
-          fi
+        echo "MYSQL_USER=$MYSQL_USER"
+        echo "MYSQL_PASSWORD length=${#MYSQL_PASSWORD}"  # 顯示密碼長度，但不顯示密碼內容
+        
+        # 嘗試手動測試 MySQL 登入
+        echo "Testing MySQL Connection..."
+        mysql -u "$MYSQL_USER" --password="$MYSQL_PASSWORD" -D ci_test_reports -e "SHOW TABLES;"
 
-          echo "status=$status" >> $GITHUB_ENV
+        # 建立 MySQL 表
+        mysql -u "$MYSQL_USER" --password="$MYSQL_PASSWORD" -D ci_test_reports -e "
+        CREATE TABLE IF NOT EXISTS \`${TABLE_NAME}\` (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          test_name VARCHAR(255),
+          test_location VARCHAR(255),
+          line VARCHAR(255) DEFAULT NULL,
+          error_count INT,
+          error_location TEXT,
+          status VARCHAR(50),
+          log TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );"
 
-          # 測試 MySQL 連線
-          echo "Testing MySQL Connection..."
-          mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "SHOW DATABASES;"
-
-          # 建立 MySQL 表
-          mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -D ci_test_reports -e "
-          CREATE TABLE IF NOT EXISTS \`${TABLE_NAME}\` (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            test_name VARCHAR(255),
-            test_location VARCHAR(255),
-            line VARCHAR(255) DEFAULT NULL,
-            error_count INT,
-            error_location TEXT,
-            status VARCHAR(50),
-            log TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-          );"
-
-          # 插入測試結果
-          mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -D ci_test_reports -e "
-          INSERT INTO \`${TABLE_NAME}\` (test_name, test_location, line, error_count, error_location, status, log)
-          VALUES ('$test_name', '$LOG_DIR', '$line', '$error_count', '$error_location', '$status', '$log_content');"
+        # 插入測試結果
+        mysql -u "$MYSQL_USER" --password="$MYSQL_PASSWORD" -D ci_test_reports -e "
+        INSERT INTO \`${TABLE_NAME}\` (test_name, test_location, line, error_count, error_location, status, log)
+        VALUES ('$test_name', '$LOG_DIR', '$line', '$error_count', '$error_location', '$status', '$log_content');"
+        
+      working-directory: /var/www/testForActions
+      shell: /usr/bin/bash -e {0}
