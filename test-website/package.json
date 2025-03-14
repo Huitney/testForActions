@@ -11,7 +11,8 @@
     "puppeteer": "^24.2.1"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+	"lint": "eslint . --ext .js,.ts --max-warnings=0"
   },
   "dependencies": {
     "playwright": "^1.50.1"
