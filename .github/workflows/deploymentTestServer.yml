@@ -28,7 +28,6 @@ jobs:
     
     - name: move the code
       run: |
-        rm -r ./test-website
-        mv /var/www/testForActions/test-website ./test-website
+        rsync -av /var/www/testForActions/test-website/ ./test-website/
         
       working-directory: /var/www/html
