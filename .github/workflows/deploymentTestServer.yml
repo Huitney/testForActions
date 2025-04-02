@@ -13,7 +13,9 @@ jobs:
       uses: actions/checkout@v4
       
     - name: Fix Git permissions
-      run: sudo chown -R $(whoami) /var/www/testForActions/.git
+      run:  |
+        sudo chown -R $(whoami) /var/www/testForActions/.git
+        sudo chown -R $(whoami) /var/www/testForActions
       working-directory: /var/www/testForActions
       
     - name: pull the code
