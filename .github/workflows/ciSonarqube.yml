@@ -27,7 +27,7 @@ jobs:
     - name: Run SonarQube Scanner and collect logs
       run: |
         sonar_start=$(date +%s.%N)
-        /opt/sonar-scanner/bin/sonar-scanner \
+        /usr/local/bin/sonar-scanner \
           -Dsonar.projectBaseDir=/var/www/html/test-website \
           -Dsonar.projectKey=test-website \
           -Dsonar.sources=src \
