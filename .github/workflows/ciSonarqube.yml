@@ -16,6 +16,13 @@ jobs:
       run: |
         sudo chown -R $USER:$USER /var/www/html/test-website
         sudo chmod -R 755 /var/www/html/test-website
+        
+    - name: Install SonarScanner CLI
+      run: |
+        wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+        unzip sonar-scanner-cli-5.0.1.3006-linux.zip
+        sudo mv sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
+        sudo ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
 
     - name: Run SonarQube Scanner and collect logs
       run: |
