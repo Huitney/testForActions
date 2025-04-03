@@ -35,7 +35,7 @@ jobs:
         sonar-scanner \
           -Dsonar.projectBaseDir=/var/www/html/test-website \
           -Dsonar.projectKey=test-website \
-          -Dsonar.sources=src \
+          -Dsonar.sources=. \
           -Dsonar.exclusions=**/node_modules/**,**/vendor/**,**/test-results/** \
           -Dsonar.host.url=http://localhost:9000 \
           -Dsonar.login=${{ secrets.SONAR_TOKEN }} > /var/www/testForActions/sonarqube_test_result.log 2>&1 || touch /var/www/testForActions/sonarqube_test_result.log
