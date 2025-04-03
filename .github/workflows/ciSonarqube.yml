@@ -4,30 +4,35 @@ on:
   workflow_run:
     workflows: ["deployment test server"]
     types: completed
-    
+
 jobs:
   sonarqube-scan:
     runs-on: self-hosted
     steps:
     - name: Check out code
       uses: actions/checkout@v4
-      
+
     - name: Fix permissions for test directory
       run: |
         sudo chown -R $USER:$USER /var/www/html/test-website
         sudo chmod -R 755 /var/www/html/test-website
-        
-    - name: Install SonarScanner CLI
+
+    - name: Check if SonarScanner is installed, install if missing
       run: |
-        wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
-        unzip sonar-scanner-cli-5.0.1.3006-linux.zip
-        sudo mv sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
-        sudo ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
+        if ! command -v sonar-scanner >/dev/null 2>&1; then
+          echo "SonarScanner not found. Installing..."
+          wget -4 https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip sonar-scanner-cli-5.0.1.3006-linux.zip
+          sudo mv sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
+          sudo ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
+        else
+          echo "SonarScanner is already installed."
+        fi
 
     - name: Run SonarQube Scanner and collect logs
       run: |
         sonar_start=$(date +%s.%N)
-        /usr/local/bin/sonar-scanner \
+        sonar-scanner \
           -Dsonar.projectBaseDir=/var/www/html/test-website \
           -Dsonar.projectKey=test-website \
           -Dsonar.sources=src \
