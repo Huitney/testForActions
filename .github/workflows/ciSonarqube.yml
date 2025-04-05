@@ -38,7 +38,7 @@ jobs:
           -Dsonar.sources=. \
           -Dsonar.exclusions=**/node_modules/**,**/vendor/**,**/test-results/** \
           -Dsonar.host.url=http://localhost:9000 \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }} > /var/www/testForActions/sonarqube_test_result.log 2>&1 || touch /var/www/testForActions/sonarqube_test_result.log
+          -Dsonar.token=${{ secrets.SONAR_TOKEN }} > /var/www/testForActions/sonarqube_test_result.log 2>&1 || touch /var/www/testForActions/sonarqube_test_result.log
         sonar_end=$(date +%s.%N)
         sonar_duration=$(echo "$sonar_end - $sonar_start" | bc)
         echo "SonarQube Time: ${sonar_duration}s"
