@@ -38,12 +38,23 @@ jobs:
           -Dsonar.sources=. \
           -Dsonar.exclusions=**/node_modules/**,**/vendor/**,**/test-results/** \
           -Dsonar.host.url=http://localhost:9000 \
-          -Dsonar.token=${{ secrets.SONAR_TOKEN }} > /var/www/testForActions/sonarqube_test_result.log 2>&1 || touch /var/www/testForActions/sonarqube_test_result.log
+          -Dsonar.token=${{ secrets.SONAR_TOKEN }} > /var/www/testForActions/sonarqube_scan_result.log 2>&1 || touch /var/www/testForActions/sonarqube_scan_result.log
         sonar_end=$(date +%s.%N)
         sonar_duration=$(echo "$sonar_end - $sonar_start" | bc)
         echo "SonarQube Time: ${sonar_duration}s"
       working-directory: /var/www/html/test-website
       continue-on-error: true
+      
+    - name: Generate summary from log
+      run: |
+        chmod +x /var/www/testForActions/generate_summary.sh
+        /var/www/testForActions/generate_summary.sh
+
+    - name: Upload summary artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: sonarqube-summary
+        path: /var/www/testForActions/sonarqube_test_result.log
 
   insert-sql-sonarqube:
     uses: Huitney/testForActions/.github/workflows/insertSQL.yml@master
