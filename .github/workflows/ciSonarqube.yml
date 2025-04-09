@@ -8,6 +8,7 @@ on:
 jobs:
   sonarqube-scan:
     runs-on: self-hosted
+
     steps:
     - name: Check out code
       uses: actions/checkout@v4
@@ -17,44 +18,40 @@ jobs:
         sudo chown -R $USER:$USER /var/www/html/test-website
         sudo chmod -R 755 /var/www/html/test-website
 
-    - name: Check if SonarScanner is installed, install if missing
+    - name: Ensure SonarScanner is installed
       run: |
-        if ! command -v sonar-scanner >/dev/null 2>&1; then
-          echo "SonarScanner not found. Installing..."
-          wget -4 https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+        if ! [ -f /usr/local/bin/sonar-scanner ]; then
+          wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
           unzip sonar-scanner-cli-5.0.1.3006-linux.zip
           sudo mv sonar-scanner-5.0.1.3006-linux /opt/sonar-scanner
           sudo ln -s /opt/sonar-scanner/bin/sonar-scanner /usr/local/bin/sonar-scanner
-        else
-          echo "SonarScanner is already installed."
         fi
 
     - name: Run SonarQube Scanner and collect logs
       run: |
         sonar_start=$(date +%s.%N)
-        sonar-scanner \
+        /usr/local/bin/sonar-scanner \
           -Dsonar.projectBaseDir=/var/www/html/test-website \
           -Dsonar.projectKey=test-website \
           -Dsonar.sources=. \
           -Dsonar.exclusions=**/node_modules/**,**/vendor/**,**/test-results/** \
           -Dsonar.host.url=http://localhost:9000 \
-          -Dsonar.token=${{ secrets.SONAR_TOKEN }} > /var/www/testForActions/sonarqube_scan_result.log 2>&1 || touch /var/www/testForActions/sonarqube_scan_result.log
+          -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+          > /var/www/testForActions/sonarqube_test_result.log 2>&1 || touch /var/www/testForActions/sonarqube_test_result.log
         sonar_end=$(date +%s.%N)
         sonar_duration=$(echo "$sonar_end - $sonar_start" | bc)
-        echo "SonarQube Time: ${sonar_duration}s"
+        echo "SonarQube Time: ${sonar_duration}s" >> /var/www/testForActions/sonarqube_test_result.log
       working-directory: /var/www/html/test-website
       continue-on-error: true
-      
-    - name: Generate summary from log
-      run: |
-        chmod +x /var/www/testForActions/generate_summary.sh
-        /var/www/testForActions/generate_summary.sh
 
-    - name: Upload summary artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: sonarqube-summary
-        path: /var/www/testForActions/sonarqube_test_result.log
+    - name: Append SonarQube summary to log
+      run: |
+        echo -e "\n=== SonarQube Summary Metrics ===" >> /var/www/testForActions/sonarqube_test_result.log
+
+        curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+          "http://localhost:9000/api/measures/component?component=test-website&metricKeys=coverage,reliability_rating,security_rating,sqale_rating,duplicated_lines_density" \
+          | jq -r '.component.measures[] | "\(.metric): \(.value)"' \
+          >> /var/www/testForActions/sonarqube_test_result.log
 
   insert-sql-sonarqube:
     uses: Huitney/testForActions/.github/workflows/insertSQL.yml@master
