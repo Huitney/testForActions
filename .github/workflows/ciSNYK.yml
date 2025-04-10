@@ -1,7 +1,9 @@
 name: Snyk Security Tests
 
 on:
-
+  workflow_run:
+    workflows: ["SonarQube Scan"]
+    types: completed
 
 jobs:
   snyk-security-tests:
