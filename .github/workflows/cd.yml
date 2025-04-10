@@ -98,8 +98,8 @@ jobs:
       
       - name: Fix Git permissions
         run:  |
-        sudo chown -R $(whoami) /var/www/testForActions/.git
-        sudo chown -R $(whoami) /var/www/testForActions
+          sudo chown -R $(whoami) /var/www/testForActions/.git
+          sudo chown -R $(whoami) /var/www/testForActions
         working-directory: /var/www/testForActions
       
       - name: Pull the latest code
