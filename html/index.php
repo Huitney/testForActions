@@ -64,7 +64,7 @@
             <td>" . htmlspecialchars($row["error_count"]) . "</td>
             <td>" . htmlspecialchars($row["error_location"]) . "</td>
             <td>" . htmlspecialchars($row["status"]) . "</td>
-            <td>" . substr(htmlspecialchars($row["log"]), 0, 50) . "...</td>
+            <td>" . substr(htmlspecialchars($row["log"]), 0, 500) . "...</td>
         </tr>";
     }
     echo "</table>";
