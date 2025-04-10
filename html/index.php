@@ -64,7 +64,9 @@
             <td>" . htmlspecialchars($row["error_count"]) . "</td>
             <td>" . htmlspecialchars($row["error_location"]) . "</td>
             <td>" . htmlspecialchars($row["status"]) . "</td>
-            <td><pre style='white-space: pre-wrap; max-width: 800px;'>" . htmlspecialchars($row["log"]) . "</pre></td>
+            <td><pre style='white-space: pre-wrap; max-width: 800px;'>"
+. htmlspecialchars(implode("\n", array_slice(explode("\n", $row["log"]), 0, 10)))
+. "</pre></td>
         </tr>";
     }
     echo "</table>";
