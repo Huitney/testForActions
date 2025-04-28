@@ -28,7 +28,8 @@ jobs:
         LOG_DIR="/var/www/testForActions"
         LOG_FILE="${LOG_DIR}/${{ inputs.name }}_test_result.log"
         GITHUB_USER="${{ github.actor }}"
-        TABLE_NAME="test_results_${GITHUB_USER}"
+        TABLE_NAME="test_results_automatic"
+        
 
         if [ ! -f "$LOG_FILE" ]; then
           echo "Error: $LOG_FILE is missing."
@@ -43,6 +44,7 @@ jobs:
         error_location=$(grep -oP "at .*:\d+" "$LOG_FILE" || echo "無")
         line=$(grep -oP "(?<=:)\d+" "$LOG_FILE" | tr '\n' ',' | sed 's/,$//' || echo "NULL")
         log_content=$(tr -d "'\n\r" < "$LOG_FILE")
+        test_times=${{${{ inputs.name }}_duration}}
 
         if grep -q -E "ERROR|FAIL|FAILURES|Deprecation Notice" "$LOG_FILE"; then
           status="failure"
@@ -66,13 +68,14 @@ jobs:
           error_location TEXT,
           status VARCHAR(50),
           log TEXT,
+          test_times FLOAT,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );"
 
         # 插入測試結果
         mysql  -u ci_user -pci_password -D ci_test_reports -e "
-        INSERT INTO \`${TABLE_NAME}\` (test_name, test_location, line, error_count, error_location, status, log)
-        VALUES ('$test_name', '$LOG_DIR', '$line', '$error_count', '$error_location', '$status', '$log_content');"
+        INSERT INTO \`${TABLE_NAME}\` (test_name, test_location, line, error_count, error_location, status, log, test_times)
+        VALUES ('$test_name', '$LOG_DIR', '$line', '$error_count', '$error_location', '$status', '$log_content', '$test_times');"
         
       working-directory: /var/www/testForActions
       shell: /usr/bin/bash -e {0}
