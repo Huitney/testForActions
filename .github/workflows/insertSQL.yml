@@ -40,7 +40,8 @@ jobs:
         # 解析測試結果
         test_name="${{ inputs.name }} Tests"
         status="success"
-        error_count=$(grep -c -E "ERROR|FAIL" "$LOG_FILE" || echo "0")
+        error_count=$(grep -c -E "ERROR|FAIL" "$LOG_FILE" 2>/dev/null || echo "0")
+        error_count=$(echo "$error_count" | head -n1 | tr -cd '0-9')
         error_location=$(grep -oP "at .*:\d+" "$LOG_FILE" || echo "無")
         line=$(grep -oP "(?<=:)\d+" "$LOG_FILE" | tr '\n' ',' | sed 's/,$//' || echo "NULL")
         log_content=$(tr -d "'\n\r" < "$LOG_FILE")
