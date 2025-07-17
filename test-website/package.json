@@ -15,6 +15,6 @@
 	"lint": "eslint . --ext .js,.ts --max-warnings=0"
   },
   "dependencies": {
-    "playwright": "^1.50.1"
+    "playwright": "^1.53.1"
   }
 }
